@@ -49,7 +49,7 @@ interface OutlineNode {
 
 - **Outline Operations**:
   - [x] Parsing: Advanced parser that distinguishes body content from child nodes based on indentation.
-  - [x] Drag & Drop: Mouse-event based implementation with visual feedback.
+  - [x] Drag & Drop: Mouse-event based implementation with visual ghost element feedback and auto-expansion of collapsed nodes on hover (600ms delay).
   - [x] Node Deletion: Recursive deletion of nodes and children with native asynchronous confirmation.
   - [x] Undo/Redo: Global history management for all operations (Delete, Move, Indent, Outdent, Text Editing) with 500ms debounce for text changes.
   - [x] Keyboard Shortcuts: Common text editing and history shortcuts tailored for outline mode.
@@ -61,7 +61,7 @@ interface OutlineNode {
   - "Copy as Text" context menu action to serialize subtree to indented text.
 
 ### Editor Features
-- **Line Numbers**: Displays logical line numbers in a left-side gutter, synced with content.
+- **Line Numbers**: Displays logical line numbers in a left-side gutter with a distinct vertical separator, synced with content.
 - **Writing Statistics**: 
   - Node-level character counts displayed in sidebar.
   - Document-level character and word counts in bottom status bar.
