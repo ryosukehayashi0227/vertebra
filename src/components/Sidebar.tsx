@@ -284,7 +284,7 @@ function Sidebar({
         <aside
             className={`sidebar ${isCollapsed ? "collapsed" : ""}`}
             onClick={() => setContextMenu(null)}
-            style={width ? { width: `${width}px`, minWidth: `${width}px`, flexBasis: `${width}px` } : undefined}
+            style={width && !isCollapsed ? { width: `${width}px`, minWidth: `${width}px`, flexBasis: `${width}px` } : undefined}
         >
             <div className="sidebar-header">
                 {!isCollapsed && (
@@ -295,7 +295,7 @@ function Sidebar({
                 )}
                 <div className="sidebar-actions">
                     {folderPath && !isCollapsed && (
-                        <button className="action-btn" onClick={() => {
+                        <button className="action-btn add-node-btn" title={t('sidebar.newSection')} onClick={() => {
                             if (viewMode === "files") setIsCreatingFile(true);
                             else {
                                 let l = 0;
@@ -314,25 +314,6 @@ function Sidebar({
                             }
                         }}>+</button>
                     )}
-                    {onToggleSplitView && (
-                        <button
-                            className={`action-btn ${isSplitView ? 'active' : ''}`}
-                            onClick={onToggleSplitView}
-                            title="Split View"
-                        >
-                            ⏐
-                        </button>
-                    )}
-                    {onOpenSettings && (
-                        <button
-                            className="action-btn"
-                            onClick={onOpenSettings}
-                            title="Settings"
-                        >
-                            ⚙
-                        </button>
-                    )}
-                    <button className="toggle-btn" onClick={onToggleCollapse}>{isCollapsed ? "▶" : "◀"}</button>
                 </div>
             </div>
 
@@ -396,6 +377,29 @@ function Sidebar({
                     )}
                 </nav>
             )}
+
+            <div className={`sidebar-footer ${isCollapsed ? "collapsed" : ""}`}>
+                {onToggleSplitView && (
+                    <button
+                        className={`action-btn ${isSplitView ? 'active' : ''}`}
+                        onClick={onToggleSplitView}
+                        title="Split View"
+                    >
+                        ⏐
+                    </button>
+                )}
+                {onOpenSettings && (
+                    <button
+                        className="action-btn"
+                        onClick={onOpenSettings}
+                        title="Settings"
+                    >
+                        ⚙
+                    </button>
+                )}
+                <div style={{ flex: 1 }}></div>
+                <button className="toggle-btn" onClick={onToggleCollapse}>{isCollapsed ? "▶" : "◀"}</button>
+            </div>
 
             {contextMenu && (
                 <div
