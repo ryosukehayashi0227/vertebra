@@ -68,6 +68,7 @@ export function useSplitView({ outline }: UseSplitViewOptions) {
 
     return {
         isSplitView,
+        setIsSplitView,
         secondaryNodeId,
         setSecondaryNodeId,
         activePane,
