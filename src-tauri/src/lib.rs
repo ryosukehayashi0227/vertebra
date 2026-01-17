@@ -213,7 +213,7 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .build()?;
 
     // File menu
-    let file_menu = SubmenuBuilder::new(app, t_file)
+    let mut file_menu_builder = SubmenuBuilder::new(app, t_file)
         .item(
             &MenuItemBuilder::with_id("new_file", t_new_file)
                 .accelerator("CmdOrCtrl+N")
@@ -239,8 +239,25 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .item(&PredefinedMenuItem::close_window(
             app,
             Some(t_close_window),
-        )?)
-        .build()?;
+        )?);
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        file_menu_builder = file_menu_builder
+            .separator()
+            .item(
+                &MenuItemBuilder::with_id(
+                    "settings",
+                    if is_ja { "設定..." } else { "Settings..." },
+                )
+                .accelerator("CmdOrCtrl+,")
+                .build(app)?,
+            )
+            .separator()
+            .item(&PredefinedMenuItem::quit(app, Some(t_quit))?);
+    }
+
+    let file_menu = file_menu_builder.build()?;
 
     // Edit menu
     let edit_menu = SubmenuBuilder::new(app, t_edit)
@@ -314,6 +331,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             // Default to English initially

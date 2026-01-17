@@ -3,6 +3,8 @@ import type { Document } from "../App";
 import type { OutlineNode } from "../lib/outline";
 import { findNodeById } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
+import { getMetaKeyLabel } from "../lib/os";
+import { useEffect, useState } from "react";
 
 interface EditorProps {
     document: Document;
@@ -20,6 +22,12 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveBut
         if (!selectedNodeId) return null;
         return findNodeById(document.outline, selectedNodeId);
     }, [document.outline, selectedNodeId]);
+
+    const [metaKeyLabel, setMetaKeyLabel] = useState('⌘');
+
+    useEffect(() => {
+        getMetaKeyLabel().then(setMetaKeyLabel);
+    }, []);
 
     // Update node property
     const handleUpdateNode = useCallback(
@@ -61,7 +69,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveBut
                             onClick={onSave}
                             disabled={!document.isDirty}
                         >
-                            {t('editor.save')} (⌘S)
+                            {t('editor.save')} ({metaKeyLabel}S)
                         </button>
                     </div>
                 )}
