@@ -35,11 +35,37 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
 - **Testing:** Vitest (Unit/Component), Playwright (E2E)
 - **Styling:** Vanilla CSS + Tailwind CSS (App structure)
 
-## Getting Started
+### Platform-Specific Setup
 
-### Prerequisites
-- Node.js & npm
-- Rust & Cargo (for Tauri)
+#### 🍎 macOS
+1. **Install Xcode Command Line Tools**:
+   ```bash
+   xcode-select --install
+   ```
+2. **Install Rust**:
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+
+#### 🐧 Linux / WSL (Ubuntu)
+1. **Install System Dependencies**:
+   ```bash
+   sudo apt update && sudo apt install -y \
+     libwebkit2gtk-4.1-dev \
+     build-essential \
+     curl \
+     wget \
+     file \
+     libxdo-dev \
+     libssl-dev \
+     libayatana-appindicator3-dev \
+     librsvg2-dev
+   ```
+2. **Install Rust**:
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+   *Note: After installation, run `source "$HOME/.cargo/env"` or restart your terminal.*
 
 ### Installation
 ```bash
@@ -56,7 +82,9 @@ npm run tauri dev
 npm run tauri build
 ```
 
-## 🍎 For macOS Users
+---
+
+## 🍎 Running the app on macOS (Unsigned App)
 
 Since this app is unsigned, you may see a warning saying "it's damaged and can't be opened" on the first launch. In such cases, please try the following steps:
 
