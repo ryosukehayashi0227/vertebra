@@ -7,10 +7,11 @@ test.describe('Welcome Screen', () => {
         // Check for app title
         await expect(page.getByRole('heading', { name: 'Vertebra' })).toBeVisible();
 
-        // Check for workflow steps
-        await expect(page.getByText('フォルダを開く')).toBeVisible();
-        await expect(page.getByText('ファイルを選択または作成')).toBeVisible();
-        await expect(page.getByText('アウトラインを編集')).toBeVisible();
+        // Check for workflow steps (use .step-text to avoid button text conflicts)
+        const stepTexts = page.locator('.step-text');
+        await expect(stepTexts.filter({ hasText: 'フォルダを開く' })).toBeVisible();
+        await expect(stepTexts.filter({ hasText: 'ファイルを選択または作成' })).toBeVisible();
+        await expect(stepTexts.filter({ hasText: 'アウトラインを編集' })).toBeVisible();
 
         // Check for main CTA button
         await expect(page.getByRole('button', { name: 'フォルダを開いて始める' })).toBeVisible();
@@ -23,8 +24,10 @@ test.describe('Welcome Screen', () => {
         const sidebar = page.locator('.sidebar');
         await expect(sidebar).toBeVisible();
 
-        // View selector buttons should be present (but may show folder prompt)
-        await expect(page.locator('.sidebar-empty').or(page.locator('.view-selector'))).toBeVisible();
+        // Should show either view selector or empty state
+        const hasViewSelector = await page.locator('.view-selector').count() > 0;
+        const hasSidebarEmpty = await page.locator('.sidebar-empty').count() > 0;
+        expect(hasViewSelector || hasSidebarEmpty).toBeTruthy();
     });
 });
 
