@@ -9,11 +9,12 @@ interface EditorProps {
     selectedNodeId: string | null;
     onOutlineChange: (outline: OutlineNode[]) => void;
     onSave: () => void;
+    hideSaveButton?: boolean;
 }
 
 import RichEditor from "./RichEditor";
 
-function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorProps) {
+function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveButton }: EditorProps) {
     const { t } = useLanguage();
     const selectedNode = useMemo(() => {
         if (!selectedNodeId) return null;
@@ -53,15 +54,17 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorPro
                     onChange={(e) => handleUpdateNode(selectedNode.id, { text: e.target.value })}
                     placeholder={t('editor.sectionNamePlaceholder')}
                 />
-                <div className="editor-actions">
-                    <button
-                        className="save-btn"
-                        onClick={onSave}
-                        disabled={!document.isDirty}
-                    >
-                        {t('editor.save')} (⌘S)
-                    </button>
-                </div>
+                {!hideSaveButton && (
+                    <div className="editor-actions">
+                        <button
+                            className="save-btn"
+                            onClick={onSave}
+                            disabled={!document.isDirty}
+                        >
+                            {t('editor.save')} (⌘S)
+                        </button>
+                    </div>
+                )}
             </header>
             <div className="content-editor">
                 <RichEditor

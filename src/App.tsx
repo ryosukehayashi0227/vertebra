@@ -55,6 +55,11 @@ function AppContent() {
   const [sidebarWidth, setSidebarWidth] = useState<number>(240);
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
 
+  // Split View state
+  const [isSplitView, setIsSplitView] = useState(false);
+  const [secondaryNodeId, setSecondaryNodeId] = useState<string | null>(null);
+  const [activePane, setActivePane] = useState<'primary' | 'secondary'>('primary');
+
   // Restore sidebar width from localStorage
   useEffect(() => {
     const savedWidth = localStorage.getItem('sidebarWidth');
@@ -523,8 +528,14 @@ function AppContent() {
         isCreatingFile={isCreatingFile}
         setIsCreatingFile={setIsCreatingFile}
         outline={currentDocument?.outline || []}
-        selectedNodeId={selectedNodeId}
-        onSelectNode={setSelectedNodeId}
+        selectedNodeId={activePane === 'primary' ? selectedNodeId : secondaryNodeId}
+        onSelectNode={(nodeId) => {
+          if (isSplitView && activePane === 'secondary') {
+            setSecondaryNodeId(nodeId);
+          } else {
+            setSelectedNodeId(nodeId);
+          }
+        }}
         onOutlineChange={handleOutlineChange}
         onIndent={handleIndent}
         onOutdent={handleOutdent}
@@ -532,6 +543,12 @@ function AppContent() {
         onDeleteNode={handleDeleteNode}
         width={sidebarWidth}
         onResizeStart={startResizing}
+        isSplitView={isSplitView}
+        onToggleSplitView={() => setIsSplitView(!isSplitView)}
+        onOpenInSecondaryPane={(nodeId) => {
+          setSecondaryNodeId(nodeId);
+          if (!isSplitView) setIsSplitView(true);
+        }}
       />
       <main className="main-content">
         {isLoading ? (
@@ -539,12 +556,66 @@ function AppContent() {
             <p>{t('loading')}</p>
           </div>
         ) : currentDocument ? (
-          <Editor
-            document={currentDocument}
-            selectedNodeId={selectedNodeId}
-            onOutlineChange={handleOutlineChangeWithHistory}
-            onSave={handleSave}
-          />
+          <div className={`editor-area ${isSplitView ? 'split-view' : ''}`}>
+            {isSplitView && (
+              <div className="editor-toolbar">
+                <button
+                  className="save-btn"
+                  onClick={handleSave}
+                  disabled={!currentDocument.isDirty}
+                >
+                  {t('editor.save')} (⌘S)
+                </button>
+              </div>
+            )}
+            <div className="editor-panes-container">
+              <div
+                className={`editor-pane ${isSplitView && activePane === 'primary' ? 'active' : ''}`}
+                onClick={() => setActivePane('primary')}
+              >
+                {isSplitView && (
+                  <button
+                    className="pane-close-btn"
+                    onClick={(e) => { e.stopPropagation(); setIsSplitView(false); setActivePane('primary'); }}
+                    title="Close pane"
+                  >
+                    ×
+                  </button>
+                )}
+                <Editor
+                  document={currentDocument}
+                  selectedNodeId={selectedNodeId}
+                  onOutlineChange={handleOutlineChangeWithHistory}
+                  onSave={handleSave}
+                  hideSaveButton={isSplitView}
+                />
+              </div>
+              {isSplitView && (
+                <>
+                  <div className="split-divider" />
+                  <div
+                    className={`editor-pane ${activePane === 'secondary' ? 'active' : ''}`}
+                    onClick={() => setActivePane('secondary')}
+                  >
+                    <button
+                      className="pane-close-btn"
+                      onClick={(e) => { e.stopPropagation(); setIsSplitView(false); setActivePane('primary'); }}
+                      title="Close pane"
+                    >
+                      ×
+                    </button>
+                    <Editor
+                      document={currentDocument}
+                      selectedNodeId={secondaryNodeId}
+                      onOutlineChange={handleOutlineChangeWithHistory}
+                      onSave={handleSave}
+                      hideSaveButton={true}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         ) : (
           <div className="empty-state">
             {folderPath ? (

@@ -26,6 +26,10 @@ interface SidebarProps {
     onDeleteNode: (id: string) => void;
     width?: number;
     onResizeStart?: () => void;
+    // Split View
+    isSplitView?: boolean;
+    onToggleSplitView?: () => void;
+    onOpenInSecondaryPane?: (nodeId: string) => void;
 }
 
 function Sidebar({
@@ -49,7 +53,10 @@ function Sidebar({
     onOutdent,
     onMoveNode,
     width,
-    onResizeStart
+    onResizeStart,
+    isSplitView,
+    onToggleSplitView,
+    onOpenInSecondaryPane
 }: SidebarProps) {
     const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<"files" | "outline">("outline");
@@ -304,6 +311,15 @@ function Sidebar({
                             }
                         }}>+</button>
                     )}
+                    {onToggleSplitView && (
+                        <button
+                            className={`action-btn ${isSplitView ? 'active' : ''}`}
+                            onClick={onToggleSplitView}
+                            title="Split View"
+                        >
+                            ⏐
+                        </button>
+                    )}
                     <button className="toggle-btn" onClick={onToggleCollapse}>{isCollapsed ? "▶" : "◀"}</button>
                 </div>
             </div>
@@ -413,6 +429,17 @@ function Sidebar({
                             >
                                 {t('sidebar.deleteNode')}
                             </button>
+                            {onOpenInSecondaryPane && (
+                                <>
+                                    <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                                    <button
+                                        style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }}
+                                        onClick={() => { onOpenInSecondaryPane(contextMenu.targetId); setContextMenu(null); }}
+                                    >
+                                        右側で開く
+                                    </button>
+                                </>
+                            )}
                         </>
                     )}
                 </div>
