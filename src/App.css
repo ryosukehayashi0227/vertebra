@@ -177,8 +177,7 @@
   gap: 4px;
 }
 
-.action-btn,
-.toggle-btn {
+.action-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -187,6 +186,20 @@
   color: var(--color-text-secondary);
   transition: background-color 0.1s ease, color 0.1s ease;
   font-size: 0.9em;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 3px;
+  color: var(--color-text-secondary);
+  transition: background-color 0.1s ease, color 0.1s ease;
+  font-size: 1.4em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .action-btn:hover,
@@ -200,19 +213,26 @@
   padding: 2px 6px;
 }
 
+.add-node-btn {
+  font-size: 1.4em;
+  padding: 0 6px;
+  font-weight: 300;
+  line-height: 1;
+}
+
 .sidebar-new-btn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 8px 12px;
   margin: 4px 0;
   background-color: transparent;
   color: var(--color-text-secondary);
   border: none;
   border-radius: 3px;
-  font-size: 0.9em;
+  font-size: 1em;
   font-weight: 400;
   cursor: pointer;
   transition: all 0.1s ease;
@@ -239,6 +259,23 @@
   justify-content: center;
   height: 100%;
   padding: 16px;
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-top: 1px solid var(--color-border);
+  min-height: 48px;
+  background-color: var(--color-bg-secondary);
+  gap: 8px;
+  margin-top: auto;
+}
+
+.sidebar-footer.collapsed {
+  flex-direction: column;
+  padding: 8px 0;
+  gap: 12px;
 }
 
 .open-folder-sidebar-btn {
