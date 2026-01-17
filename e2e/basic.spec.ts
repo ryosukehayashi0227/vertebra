@@ -9,12 +9,12 @@ test.describe('Welcome Screen', () => {
 
         // Check for workflow steps (use .step-text to avoid button text conflicts)
         const stepTexts = page.locator('.step-text');
-        await expect(stepTexts.filter({ hasText: 'フォルダを開く' })).toBeVisible();
-        await expect(stepTexts.filter({ hasText: 'ファイルを選択または作成' })).toBeVisible();
-        await expect(stepTexts.filter({ hasText: 'アウトラインを編集' })).toBeVisible();
+        await expect(stepTexts.filter({ hasText: 'Open Folder' })).toBeVisible();
+        await expect(stepTexts.filter({ hasText: 'Select or Create File' })).toBeVisible();
+        await expect(stepTexts.filter({ hasText: 'Edit Outline' })).toBeVisible();
 
         // Check for main CTA button
-        await expect(page.getByRole('button', { name: 'フォルダを開いて始める' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open Folder to Start' })).toBeVisible();
     });
 
     test('should have visible sidebar with view selector', async ({ page }) => {
@@ -36,7 +36,8 @@ test.describe('Sidebar Navigation', () => {
         await page.goto('/');
 
         // Look for open folder button in sidebar
-        const openFolderBtn = page.getByRole('button', { name: 'フォルダを開く' });
+        // Note: Use exact: true to distinguish from "Open Folder to Start" in main area
+        const openFolderBtn = page.locator('.sidebar .open-folder-sidebar-btn');
         await expect(openFolderBtn).toBeVisible();
     });
 

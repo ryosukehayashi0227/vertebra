@@ -12,33 +12,11 @@ vi.mock('./lib/fileSystem', () => ({
     createFile: vi.fn(),
 }));
 
-
-// Mock localStorage
-const localStorageMock = (() => {
-    let store: Record<string, string> = {};
-    return {
-        getItem: vi.fn((key: string) => store[key] || null),
-        setItem: vi.fn((key: string, value: string) => {
-            store[key] = value.toString();
-        }),
-        removeItem: vi.fn((key: string) => {
-            delete store[key];
-        }),
-        clear: vi.fn(() => {
-            store = {};
-        }),
-    };
-})();
-
-Object.defineProperty(window, 'localStorage', {
-    value: localStorageMock,
-});
-
 describe('App Session Restoration', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.clearAllMocks();
-        localStorageMock.clear();
+        localStorage.clear();
     });
 
     afterEach(() => {
@@ -46,7 +24,7 @@ describe('App Session Restoration', () => {
     });
 
     it('should restore folder from localStorage on mount', async () => {
-        localStorageMock.getItem.mockImplementation((key) => {
+        vi.mocked(localStorage.getItem).mockImplementation((key) => {
             if (key === 'lastFolderPath') return '/saved/path';
             return null;
         });
@@ -69,7 +47,7 @@ describe('App Session Restoration', () => {
     });
 
     it('should restore file from localStorage on mount', async () => {
-        localStorageMock.getItem.mockImplementation((key) => {
+        vi.mocked(localStorage.getItem).mockImplementation((key) => {
             if (key === 'lastFolderPath') return '/saved/path';
             if (key === 'lastFilePath') return '/saved/path/file1.md';
             return null;
@@ -99,7 +77,7 @@ describe('App Session Restoration', () => {
     });
 
     it('should not crash and remove invalid path from localStorage', async () => {
-        localStorageMock.getItem.mockImplementation((key) => {
+        vi.mocked(localStorage.getItem).mockImplementation((key) => {
             if (key === 'lastFolderPath') return '/saved/path';
             if (key === 'lastFilePath') return '/saved/path/missing.md';
             return null;
@@ -121,6 +99,6 @@ describe('App Session Restoration', () => {
         });
 
         expect(fileSystem.readFile).toHaveBeenCalledWith('/saved/path/missing.md');
-        expect(localStorageMock.removeItem).toHaveBeenCalledWith('lastFilePath');
+        expect(localStorage.removeItem).toHaveBeenCalledWith('lastFilePath');
     });
 });

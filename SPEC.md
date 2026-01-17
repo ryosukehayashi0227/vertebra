@@ -53,7 +53,18 @@ interface OutlineNode {
 
 ### UX Enhancements
 - **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.
-- **Welcome Workflow**: Guided steps for new users (Open Folder -> Select File -> Edit).
+- **Workflow**: Guided steps for new users (Open Folder -> Select File -> Edit).
+
+### Customization & Persistence
+- **Sidebar**: Resizable width, persisting to `localStorage`.
+- **Typography**: Global font size adjustment (Zoom In/Out), persisting to `localStorage` via CSS variables.
+
+### Internationalization (i18n)
+- **Language Support**: English (en) and Japanese (ja).
+- **Auto-detection**: Checks `localStorage` -> `navigator.language` -> Default (en).
+- **Architecture**:
+  - Frontend (`LanguageContext`): Manages UI strings using resource files.
+  - Backend (Tauri): Dynamic menu rebuilding initiated by frontend events.
 
 ## 4. Testing Strategy
 

@@ -94,6 +94,206 @@ fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
     fs::rename(&old_path, &new_path).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn update_menu_language(app: tauri::AppHandle, lang: String) -> Result<(), String> {
+    let menu = build_menu(&app, &lang).map_err(|e| e.to_string())?;
+    app.set_menu(menu).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
+    use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+
+    let is_ja = lang == "ja";
+
+    // Text resources
+    let t_app_name = "Vertebra";
+    let t_about = if is_ja {
+        "Vertebraについて"
+    } else {
+        "About Vertebra"
+    };
+    let t_hide = if is_ja {
+        "Vertebraを隠す"
+    } else {
+        "Hide Vertebra"
+    };
+    let t_hide_others = if is_ja {
+        "ほかを隠す"
+    } else {
+        "Hide Others"
+    };
+    let t_show_all = if is_ja {
+        "すべてを表示"
+    } else {
+        "Show All"
+    };
+    let t_quit = if is_ja {
+        "Vertebraを終了"
+    } else {
+        "Quit Vertebra"
+    };
+
+    let t_file = if is_ja { "ファイル" } else { "File" };
+    let t_new_file = if is_ja {
+        "新規ファイル"
+    } else {
+        "New File"
+    };
+    let t_open_folder = if is_ja {
+        "フォルダを開く..."
+    } else {
+        "Open Folder..."
+    };
+    let t_save = if is_ja { "保存" } else { "Save" };
+    let t_close_file = if is_ja {
+        "ファイルを閉じる"
+    } else {
+        "Close File"
+    };
+    let t_close_window = if is_ja {
+        "ウィンドウを閉じる"
+    } else {
+        "Close Window"
+    };
+
+    let t_edit = if is_ja { "編集" } else { "Edit" };
+    let t_undo = if is_ja { "取り消し" } else { "Undo" };
+    let t_redo = if is_ja { "やり直し" } else { "Redo" };
+    let t_cut = if is_ja { "カット" } else { "Cut" };
+    let t_copy = if is_ja { "コピー" } else { "Copy" };
+    let t_paste = if is_ja { "ペースト" } else { "Paste" };
+    let t_select_all = if is_ja {
+        "すべて選択"
+    } else {
+        "Select All"
+    };
+
+    let t_view = if is_ja { "表示" } else { "View" };
+    let t_zoom_in = if is_ja { "拡大" } else { "Zoom In" };
+    let t_zoom_out = if is_ja { "縮小" } else { "Zoom Out" };
+    let t_zoom_reset = if is_ja {
+        "サイズをリセット"
+    } else {
+        "Reset Zoom"
+    };
+    let t_fullscreen = if is_ja {
+        "フルスクリーン"
+    } else {
+        "Toggle Fullscreen"
+    };
+    let t_lang = if is_ja {
+        "言語 (Language)"
+    } else {
+        "Language"
+    };
+    let t_lang_en = "English";
+    let t_lang_ja = "日本語";
+
+    let t_window = if is_ja { "ウィンドウ" } else { "Window" };
+    let t_minimize = if is_ja { "最小化" } else { "Minimize" };
+    let t_maximize = if is_ja { "最大化" } else { "Maximize" };
+
+    // macOS App menu
+    #[cfg(target_os = "macos")]
+    let app_menu = SubmenuBuilder::new(app, t_app_name)
+        .item(&PredefinedMenuItem::about(app, Some(t_about), None)?)
+        .separator()
+        .item(&PredefinedMenuItem::hide(app, Some(t_hide))?)
+        .item(&PredefinedMenuItem::hide_others(app, Some(t_hide_others))?)
+        .item(&PredefinedMenuItem::show_all(app, Some(t_show_all))?)
+        .separator()
+        .item(&PredefinedMenuItem::quit(app, Some(t_quit))?)
+        .build()?;
+
+    // File menu
+    let file_menu = SubmenuBuilder::new(app, t_file)
+        .item(
+            &MenuItemBuilder::with_id("new_file", t_new_file)
+                .accelerator("CmdOrCtrl+N")
+                .build(app)?,
+        )
+        .item(
+            &MenuItemBuilder::with_id("open_folder", t_open_folder)
+                .accelerator("CmdOrCtrl+O")
+                .build(app)?,
+        )
+        .separator()
+        .item(
+            &MenuItemBuilder::with_id("save", t_save)
+                .accelerator("CmdOrCtrl+S")
+                .build(app)?,
+        )
+        .separator()
+        .item(
+            &MenuItemBuilder::with_id("close_file", t_close_file)
+                .accelerator("CmdOrCtrl+W")
+                .build(app)?,
+        )
+        .item(&PredefinedMenuItem::close_window(
+            app,
+            Some(t_close_window),
+        )?)
+        .build()?;
+
+    // Edit menu
+    let edit_menu = SubmenuBuilder::new(app, t_edit)
+        .item(&PredefinedMenuItem::undo(app, Some(t_undo))?)
+        .item(&PredefinedMenuItem::redo(app, Some(t_redo))?)
+        .separator()
+        .item(&PredefinedMenuItem::cut(app, Some(t_cut))?)
+        .item(&PredefinedMenuItem::copy(app, Some(t_copy))?)
+        .item(&PredefinedMenuItem::paste(app, Some(t_paste))?)
+        .item(&PredefinedMenuItem::select_all(app, Some(t_select_all))?)
+        .build()?;
+
+    // View menu
+    let lang_menu = SubmenuBuilder::new(app, t_lang)
+        .item(&MenuItemBuilder::with_id("change_lang_en", t_lang_en).build(app)?)
+        .item(&MenuItemBuilder::with_id("change_lang_ja", t_lang_ja).build(app)?)
+        .build()?;
+
+    let view_menu = SubmenuBuilder::new(app, t_view)
+        .item(
+            &MenuItemBuilder::with_id("zoom_in", t_zoom_in)
+                .accelerator("CmdOrCtrl+=")
+                .build(app)?,
+        )
+        .item(
+            &MenuItemBuilder::with_id("zoom_out", t_zoom_out)
+                .accelerator("CmdOrCtrl+-")
+                .build(app)?,
+        )
+        .item(
+            &MenuItemBuilder::with_id("zoom_reset", t_zoom_reset)
+                .accelerator("CmdOrCtrl+0")
+                .build(app)?,
+        )
+        .separator()
+        .item(&PredefinedMenuItem::fullscreen(app, Some(t_fullscreen))?)
+        .separator()
+        .item(&lang_menu)
+        .build()?;
+
+    // Window menu
+    let window_menu = SubmenuBuilder::new(app, t_window)
+        .item(&PredefinedMenuItem::minimize(app, Some(t_minimize))?)
+        .item(&PredefinedMenuItem::maximize(app, Some(t_maximize))?)
+        .build()?;
+
+    #[cfg(target_os = "macos")]
+    let menu = MenuBuilder::new(app)
+        .items(&[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu])
+        .build()?;
+
+    #[cfg(not(target_os = "macos"))]
+    let menu = MenuBuilder::new(app)
+        .items(&[&file_menu, &edit_menu, &view_menu, &window_menu])
+        .build()?;
+
+    Ok(menu)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -102,107 +302,9 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
-            use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
-
-            // macOS App menu (appears under app name)
-            #[cfg(target_os = "macos")]
-            let app_menu = SubmenuBuilder::new(app, "Vertebra")
-                .item(&PredefinedMenuItem::about(
-                    app,
-                    Some("Vertebraについて"),
-                    None,
-                )?)
-                .separator()
-                .item(&PredefinedMenuItem::hide(app, Some("Vertebraを隠す"))?)
-                .item(&PredefinedMenuItem::hide_others(app, Some("ほかを隠す"))?)
-                .item(&PredefinedMenuItem::show_all(app, Some("すべてを表示"))?)
-                .separator()
-                .item(&PredefinedMenuItem::quit(app, Some("Vertebraを終了"))?)
-                .build()?;
-
-            // File menu
-            let file_menu = SubmenuBuilder::new(app, "ファイル")
-                .item(
-                    &MenuItemBuilder::with_id("new_file", "新規ファイル")
-                        .accelerator("CmdOrCtrl+N")
-                        .build(app)?,
-                )
-                .item(
-                    &MenuItemBuilder::with_id("open_folder", "フォルダを開く...")
-                        .accelerator("CmdOrCtrl+O")
-                        .build(app)?,
-                )
-                .separator()
-                .item(
-                    &MenuItemBuilder::with_id("save", "保存")
-                        .accelerator("CmdOrCtrl+S")
-                        .build(app)?,
-                )
-                .separator()
-                .item(
-                    &MenuItemBuilder::with_id("close_file", "ファイルを閉じる")
-                        .accelerator("CmdOrCtrl+W")
-                        .build(app)?,
-                )
-                .item(&PredefinedMenuItem::close_window(
-                    app,
-                    Some("ウィンドウを閉じる"),
-                )?)
-                .build()?;
-
-            // Edit menu
-            let edit_menu = SubmenuBuilder::new(app, "編集")
-                .item(&PredefinedMenuItem::undo(app, Some("取り消し"))?)
-                .item(&PredefinedMenuItem::redo(app, Some("やり直し"))?)
-                .separator()
-                .item(&PredefinedMenuItem::cut(app, Some("カット"))?)
-                .item(&PredefinedMenuItem::copy(app, Some("コピー"))?)
-                .item(&PredefinedMenuItem::paste(app, Some("ペースト"))?)
-                .item(&PredefinedMenuItem::select_all(app, Some("すべて選択"))?)
-                .build()?;
-
-            // View menu
-            let view_menu = SubmenuBuilder::new(app, "表示")
-                .item(
-                    &MenuItemBuilder::with_id("zoom_in", "拡大")
-                        .accelerator("CmdOrCtrl+=")
-                        .build(app)?,
-                )
-                .item(
-                    &MenuItemBuilder::with_id("zoom_out", "縮小")
-                        .accelerator("CmdOrCtrl+-")
-                        .build(app)?,
-                )
-                .item(
-                    &MenuItemBuilder::with_id("zoom_reset", "サイズをリセット")
-                        .accelerator("CmdOrCtrl+0")
-                        .build(app)?,
-                )
-                .separator()
-                .item(&PredefinedMenuItem::fullscreen(
-                    app,
-                    Some("フルスクリーン"),
-                )?)
-                .build()?;
-
-            // Window menu
-            let window_menu = SubmenuBuilder::new(app, "ウィンドウ")
-                .item(&PredefinedMenuItem::minimize(app, Some("最小化"))?)
-                .item(&PredefinedMenuItem::maximize(app, Some("最大化"))?)
-                .build()?;
-
-            #[cfg(target_os = "macos")]
-            let menu = MenuBuilder::new(app)
-                .items(&[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu])
-                .build()?;
-
-            #[cfg(not(target_os = "macos"))]
-            let menu = MenuBuilder::new(app)
-                .items(&[&file_menu, &edit_menu, &view_menu, &window_menu])
-                .build()?;
-
+            // Default to English initially
+            let menu = build_menu(app.handle(), "en")?;
             app.set_menu(menu)?;
-
             Ok(())
         })
         .on_menu_event(|app, event| {
@@ -231,6 +333,12 @@ pub fn run() {
                 "zoom_reset" => {
                     let _ = app.emit("menu-zoom-reset", ());
                 }
+                "change_lang_en" => {
+                    let _ = app.emit("menu-change-lang-en", ());
+                }
+                "change_lang_ja" => {
+                    let _ = app.emit("menu-change-lang-ja", ());
+                }
                 _ => {}
             }
         })
@@ -240,7 +348,8 @@ pub fn run() {
             write_file,
             create_file,
             delete_file,
-            rename_file
+            rename_file,
+            update_menu_language,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

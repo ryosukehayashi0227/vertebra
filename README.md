@@ -11,9 +11,12 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
   - Drag & Drop reordering (supporting nested structures).
   - Indent/Outdent operations.
 - **UI/UX**:
+  - **Internationalization (i18n)**: English and Japanese support (auto-detect OS language).
+  - **Granular Font Size**: Adjustable text size (Zoom In/Out) persisting across sessions.
+  - **Resizable Sidebar**: Draggable sidebar width with state persistence.
+  - **Workflow**: Guided welcome screen for new users.
   - Auto-switching sidebar views (Files / Outline).
-  - Native application menus (File, Edit, Window).
-  - Workflow-guided welcome screen.
+  - Native application menus (File, Edit, View, Window) with dynamic language updates.
 
 ## Tech Stack
 - **Core:** [Tauri v2](https://tauri.app/) (Rust)

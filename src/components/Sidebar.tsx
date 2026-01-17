@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { FileEntry } from "../lib/fileSystem";
 import { type OutlineNode, createNode, findNodeById, appendChildNode } from "../lib/outline";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
     folderPath: string | null;
@@ -47,6 +48,7 @@ function Sidebar({
     width,
     onResizeStart
 }: SidebarProps) {
+    const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<"files" | "outline">("outline");
     const [newFileName, setNewFileName] = useState("");
     const [dragOverInfo, setDragOverInfo] = useState<{ id: string; position: 'before' | 'after' | 'inside' } | null>(null);
@@ -227,8 +229,8 @@ function Sidebar({
             <div className="sidebar-header">
                 {!isCollapsed && (
                     <div className="view-selector">
-                        <button className={viewMode === "outline" ? "active" : ""} onClick={() => setViewMode("outline")}>アウトライン</button>
-                        <button className={viewMode === "files" ? "active" : ""} onClick={() => setViewMode("files")}>ファイル</button>
+                        <button className={viewMode === "outline" ? "active" : ""} onClick={() => setViewMode("outline")}>{t('sidebar.outline')}</button>
+                        <button className={viewMode === "files" ? "active" : ""} onClick={() => setViewMode("files")}>{t('sidebar.files')}</button>
                     </div>
                 )}
                 <div className="sidebar-actions">
@@ -241,7 +243,7 @@ function Sidebar({
                                     const n = findNodeById(outline, selectedNodeId);
                                     if (n) l = n.level + 1;
                                 }
-                                const n = createNode("新しいセクション", l);
+                                const n = createNode(t('sidebar.newSection'), l);
                                 if (selectedNodeId) {
                                     onOutlineChange(appendChildNode(outline, selectedNodeId, n));
                                     onSelectNode(n.id);
@@ -260,7 +262,7 @@ function Sidebar({
                 <nav className="sidebar-content">
                     {!folderPath ? (
                         <div className="sidebar-empty">
-                            <button className="open-folder-sidebar-btn" onClick={onOpenFolder}>フォルダを開く</button>
+                            <button className="open-folder-sidebar-btn" onClick={onOpenFolder}>{t('sidebar.openFolder')}</button>
                         </div>
                     ) : (
                         <div className="sidebar-scrollable">

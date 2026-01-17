@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import type { Document } from "../App";
 import type { OutlineNode } from "../lib/outline";
 import { findNodeById } from "../lib/outline";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface EditorProps {
     document: Document;
@@ -13,6 +14,7 @@ interface EditorProps {
 import RichEditor from "./RichEditor";
 
 function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorProps) {
+    const { t } = useLanguage();
     const selectedNode = useMemo(() => {
         if (!selectedNodeId) return null;
         return findNodeById(document.outline, selectedNodeId);
@@ -36,7 +38,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorPro
     if (!selectedNode) {
         return (
             <div className="editor-container empty">
-                <p>サイドバーで項目を選択してください</p>
+                <p>{t('editor.selectNode')}</p>
             </div>
         );
     }
@@ -49,7 +51,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorPro
                     className="node-title-input"
                     value={selectedNode.text}
                     onChange={(e) => handleUpdateNode(selectedNode.id, { text: e.target.value })}
-                    placeholder="セクション名を入力..."
+                    placeholder={t('editor.sectionNamePlaceholder')}
                 />
                 <div className="editor-actions">
                     <button
@@ -57,7 +59,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorPro
                         onClick={onSave}
                         disabled={!document.isDirty}
                     >
-                        保存 (⌘S)
+                        {t('editor.save')} (⌘S)
                     </button>
                 </div>
             </header>
@@ -65,7 +67,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave }: EditorPro
                 <RichEditor
                     content={selectedNode.content}
                     onChange={(markdown) => handleUpdateNode(selectedNode.id, { content: markdown })}
-                    placeholder="ここから本文を入力..."
+                    placeholder={t('editor.contentPlaceholder')}
                 />
             </div>
         </div>

@@ -20,6 +20,7 @@ import {
   moveNode,
 } from "./lib/outline";
 import "./App.css";
+import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 
 export interface Document {
   path: string;
@@ -29,7 +30,8 @@ export interface Document {
   isDirty: boolean;
 }
 
-function App() {
+function AppContent() {
+  const { t, setLanguage } = useLanguage();
   const [folderPath, setFolderPath] = useState<string | null>(null);
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -383,6 +385,13 @@ function App() {
         setSelectedNodeId(null);
       }));
 
+      unlisten.push(await listen("menu-change-lang-en", () => {
+        setLanguage('en');
+      }));
+      unlisten.push(await listen("menu-change-lang-ja", () => {
+        setLanguage('ja');
+      }));
+
       unlisten.push(await listen("menu-zoom-in", () => {
         console.log("Zoom In Event Received");
         zoomIn();
@@ -433,7 +442,7 @@ function App() {
       <main className="main-content">
         {isLoading ? (
           <div className="loading-state">
-            <p>読み込み中...</p>
+            <p>{t('loading')}</p>
           </div>
         ) : currentDocument ? (
           <Editor
@@ -448,44 +457,44 @@ function App() {
               <div className="welcome-message">
                 <div className="workflow-step completed">
                   <span className="step-number">✓</span>
-                  <span className="step-text">フォルダを開く</span>
+                  <span className="step-text">{t('welcome.step1')}</span>
                 </div>
                 <div className="workflow-step current">
                   <span className="step-number">2</span>
-                  <span className="step-text">ファイルを選択または作成</span>
+                  <span className="step-text">{t('welcome.step2')}</span>
                 </div>
                 <div className="workflow-step">
                   <span className="step-number">3</span>
-                  <span className="step-text">アウトラインを編集</span>
+                  <span className="step-text">{t('welcome.step3')}</span>
                 </div>
                 <div className="welcome-actions">
                   <button className="create-file-btn" onClick={handleStartCreateFile}>
-                    新規ファイルを作成
+                    {t('welcome.createFileBtn')}
                   </button>
                 </div>
-                <p className="welcome-hint">または、サイドバーからファイルを選択してください</p>
+                <p className="welcome-hint">{t('welcome.hint')}</p>
               </div>
             ) : (
               <div className="welcome-message">
-                <h2>Vertebra</h2>
-                <p className="welcome-subtitle">執筆のためのアウトラインエディタ</p>
+                <h2>{t('app.title')}</h2>
+                <p className="welcome-subtitle">{t('welcome.subtitle')}</p>
                 <div className="workflow-steps">
                   <div className="workflow-step current">
                     <span className="step-number">1</span>
-                    <span className="step-text">フォルダを開く</span>
+                    <span className="step-text">{t('welcome.step1')}</span>
                   </div>
                   <div className="workflow-step">
                     <span className="step-number">2</span>
-                    <span className="step-text">ファイルを選択または作成</span>
+                    <span className="step-text">{t('welcome.step2')}</span>
                   </div>
                   <div className="workflow-step">
                     <span className="step-number">3</span>
-                    <span className="step-text">アウトラインを編集</span>
+                    <span className="step-text">{t('welcome.step3')}</span>
                   </div>
                 </div>
                 <div className="welcome-actions">
                   <button className="open-folder-btn" onClick={handleOpenFolder}>
-                    フォルダを開いて始める
+                    {t('welcome.startBtn')}
                   </button>
                 </div>
               </div>
@@ -494,6 +503,14 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
