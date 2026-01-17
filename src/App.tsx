@@ -22,7 +22,6 @@ import {
   moveNode,
   removeNode,
   calculateTotalStats,
-  findNodeById,
 } from "./lib/outline";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
@@ -30,6 +29,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import SettingsModal from "./components/SettingsModal";
 import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
+import { useUndoRedo } from "./hooks/useUndoRedo";
+import { useSplitView } from "./hooks/useSplitView";
 
 
 export interface Document {
@@ -50,11 +51,6 @@ function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const undoStack = useRef<OutlineNode[][]>([]);
-  const redoStack = useRef<OutlineNode[][]>([]);
-  const MAX_HISTORY = 50;
-  const debounceTimer = useRef<number | null>(null);
-  const DEBOUNCE_DELAY = 500; // ms
   const isSessionRestore = useRef(true); // Flag to track if we're restoring session
   const [isLoading, setIsLoading] = useState(false);
   // Font Size (from hook)
@@ -66,69 +62,19 @@ function AppContent() {
   // Sidebar resize (from hook)
   const { sidebarWidth, startResizing } = useSidebarResize();
 
-  // Split View state
-  const [isSplitView, setIsSplitView] = useState(() => {
-    return localStorage.getItem('splitView') === 'true';
-  });
-  const [secondaryNodeId, setSecondaryNodeId] = useState<string | null>(null);
-  const [activePane, setActivePane] = useState<'primary' | 'secondary'>(() => {
-    const saved = localStorage.getItem('activePane');
-    return (saved === 'primary' || saved === 'secondary') ? saved : 'primary';
-  });
+  // Split View (from hook)
+  const {
+    isSplitView,
+    setIsSplitView,
+    secondaryNodeId,
+    setSecondaryNodeId,
+    activePane,
+    setActivePane,
+  } = useSplitView({ outline: currentDocument?.outline });
 
   // Settings modal state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-
-
-  // Persist split view state
-  useEffect(() => {
-    localStorage.setItem('splitView', String(isSplitView));
-  }, [isSplitView]);
-
-  useEffect(() => {
-    if (!currentDocument) return;
-    if (secondaryNodeId) {
-      const node = findNodeById(currentDocument.outline, secondaryNodeId);
-      if (node) {
-        localStorage.setItem('secondaryNodeText', node.text);
-      }
-    } else {
-      localStorage.removeItem('secondaryNodeText');
-    }
-  }, [secondaryNodeId, currentDocument]);
-
-  useEffect(() => {
-    localStorage.setItem('activePane', activePane);
-  }, [activePane]);
-
-  // Persist selectedNode text (ID changes on reload)
-  useEffect(() => {
-    if (!currentDocument) return;
-    if (selectedNodeId) {
-      const node = findNodeById(currentDocument.outline, selectedNodeId);
-      if (node) {
-        localStorage.setItem('selectedNodeText', node.text);
-      }
-    } else {
-      localStorage.removeItem('selectedNodeText');
-    }
-  }, [selectedNodeId, currentDocument]);
-
-  // Validate secondaryNodeId when document changes
-  useEffect(() => {
-    if (currentDocument && isSplitView && secondaryNodeId) {
-      // Check if secondaryNodeId exists in current document
-      const nodeExists = findNodeById(currentDocument.outline, secondaryNodeId);
-      if (!nodeExists && currentDocument.outline.length > 0) {
-        // Don't modify if we're in the middle of restoration (might cause race conditions)
-        // But honestly, if findNodeById fails, the ID IS gone. 
-        // With text-based restore, the ID we set SHOULD exist.
-        // Fallback to first node if somehow we have an invalid ID
-        setSecondaryNodeId(currentDocument.outline[0].id);
-      }
-    }
-  }, [currentDocument, isSplitView, secondaryNodeId]);
 
 
 
@@ -216,8 +162,7 @@ function AppContent() {
       console.log('[handleSelectFile] File selected, path saved:', filePath);
 
       // Clear undo/redo history on file switch
-      undoStack.current = [];
-      redoStack.current = [];
+      clearHistory();
 
       // Restore saved node IDs or fallback to first node
       if (outline.length > 0) {
@@ -290,52 +235,17 @@ function AppContent() {
     });
   }, []);
 
-  const pushHistory = useCallback(() => {
-    if (!currentDocument) return;
-    // Clone outline to avoid mutation issues in history
-    undoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
-    if (undoStack.current.length > MAX_HISTORY) {
-      undoStack.current.shift();
-    }
-    redoStack.current = []; // Clear redo stack on new action
-  }, [currentDocument]);
-
-  // Update outline with debounced history push (for text editing)
-  const handleOutlineChangeWithHistory = useCallback((newOutline: OutlineNode[]) => {
-    handleOutlineChange(newOutline);
-
-    // Clear existing timer
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    // Set new timer to push history after delay
-    debounceTimer.current = setTimeout(() => {
-      pushHistory();
-    }, DEBOUNCE_DELAY);
-  }, [handleOutlineChange, pushHistory]);
-
-  const handleUndo = useCallback(() => {
-    if (undoStack.current.length === 0 || !currentDocument) return;
-
-    // Push current state to redo stack
-    redoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
-
-    // Pop from undo stack
-    const previousOutline = undoStack.current.pop()!;
-    handleOutlineChange(previousOutline);
-  }, [currentDocument, handleOutlineChange]);
-
-  const handleRedo = useCallback(() => {
-    if (redoStack.current.length === 0 || !currentDocument) return;
-
-    // Push current state to undo stack
-    undoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
-
-    // Pop from redo stack
-    const nextOutline = redoStack.current.pop()!;
-    handleOutlineChange(nextOutline);
-  }, [currentDocument, handleOutlineChange]);
+  // Undo/Redo (from hook)
+  const {
+    pushHistory,
+    handleOutlineChangeWithHistory,
+    handleUndo,
+    handleRedo,
+    clearHistory,
+  } = useUndoRedo({
+    outline: currentDocument?.outline,
+    onOutlineChange: handleOutlineChange,
+  });
 
   // Save file
   const handleSave = useCallback(async () => {
