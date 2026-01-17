@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { FileEntry } from "../lib/fileSystem";
-import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText } from "../lib/outline";
+import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
@@ -56,6 +56,15 @@ function Sidebar({
     const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
     const listRef = useRef<HTMLUListElement>(null);
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, targetId: string, type: "file" | "outline" } | null>(null);
+
+    // Search state
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Calculate visible nodes based on search query
+    const searchResult = useMemo(() => {
+        if (!searchQuery.trim()) return null; // null means "show all"
+        return filterNodes(outline, searchQuery);
+    }, [outline, searchQuery]);
 
     useEffect(() => {
         const handleClickOutside = () => setContextMenu(null);
@@ -187,23 +196,32 @@ function Sidebar({
     }, [outline]);
 
     // Render outline items with mousedown handler for dragging
+    // Render outline items with mousedown handler for dragging
     const renderOutlineItem = (node: OutlineNode): React.ReactNode => {
+        // Search: Check visibility
+        if (searchResult && !searchResult.visibleIds.has(node.id)) {
+            return null;
+        }
+
         const isSelected = selectedNodeId === node.id;
         const hasChildren = node.children.length > 0;
-        const isCollapsed = collapsedNodes.has(node.id);
+        const isCollapsed = searchResult ? false : collapsedNodes.has(node.id);
         const isTarget = dragOverInfo?.id === node.id;
         const isSelf = draggingId === node.id;
+        const isMatched = searchResult?.matchedIds.has(node.id);
+
+        const isDraggable = !searchResult;
 
         return (
             <li
                 key={node.id}
-                className={`sidebar-outline-node ${isTarget ? `drag-over-${dragOverInfo?.position}` : ""} ${isSelf ? "is-dragging" : ""}`}
+                className={`sidebar-outline-node ${isTarget ? `drag-over-${dragOverInfo?.position}` : ""} ${isSelf ? "is-dragging" : ""} ${isMatched ? "search-match" : ""}`}
                 data-node-id={node.id}
             >
                 <div
                     className={`sidebar-outline-item ${isSelected ? "selected" : ""}`}
-                    style={{ paddingLeft: `${node.level * 20 + 8}px`, cursor: 'grab' }}
-                    onMouseDown={(e) => handleMouseDown(e, node.id)}
+                    style={{ paddingLeft: `${node.level * 20 + 8}px`, cursor: isDraggable ? 'grab' : 'default' }}
+                    onMouseDown={isDraggable ? (e) => handleMouseDown(e, node.id) : undefined}
                     onClick={() => !draggingId && onSelectNode(node.id)}
                     onContextMenu={(e) => {
                         e.preventDefault();
@@ -299,14 +317,34 @@ function Sidebar({
                                     </ul>
                                 </>
                             ) : (
-                                <div className="sidebar-outline-view">
-                                    {outline.length === 0 ? (
-                                        <p className="sidebar-empty-hint">項目がありません</p>
-                                    ) : (
-                                        <ul ref={listRef} className="sidebar-outline-list">
-                                            {outline.map(node => renderOutlineItem(node))}
-                                        </ul>
-                                    )}
+                                <div className="sidebar-outline-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                    <div style={{ padding: '8px 8px 4px 8px' }}>
+                                        <input
+                                            type="text"
+                                            placeholder={t('sidebar.searchPlaceholder')}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                border: '1px solid var(--color-border)',
+                                                background: 'var(--color-bg-secondary)',
+                                                color: 'var(--color-text-primary)',
+                                                fontSize: '0.9rem',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                                        {outline.length === 0 ? (
+                                            <p className="sidebar-empty-hint">項目がありません</p>
+                                        ) : (
+                                            <ul ref={listRef} className="sidebar-outline-list">
+                                                {outline.map(node => renderOutlineItem(node))}
+                                            </ul>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

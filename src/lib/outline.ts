@@ -480,3 +480,42 @@ export function serializeNodesToText(nodes: OutlineNode[], indentChar: string = 
     }
     return result;
 }
+
+/**
+ * Filter nodes based on a search query
+ * Returns a set of visible IDs and matched IDs
+ */
+export function filterNodes(nodes: OutlineNode[], query: string): { visibleIds: Set<string>, matchedIds: Set<string> } {
+    const visibleIds = new Set<string>();
+    const matchedIds = new Set<string>();
+    const lowerQuery = query.toLowerCase();
+
+    function recurse(node: OutlineNode): boolean {
+        let isMatch = node.text.toLowerCase().includes(lowerQuery);
+        if (!isMatch && node.content) {
+            isMatch = node.content.toLowerCase().includes(lowerQuery);
+        }
+
+        if (isMatch) {
+            matchedIds.add(node.id);
+        }
+
+        let hasVisibleChild = false;
+        for (const child of node.children) {
+            if (recurse(child)) {
+                hasVisibleChild = true;
+            }
+        }
+
+        // If this node matches or has a visible child, mark it as visible
+        if (isMatch || hasVisibleChild) {
+            visibleIds.add(node.id);
+            return true;
+        }
+
+        return false;
+    }
+
+    nodes.forEach(node => recurse(node));
+    return { visibleIds, matchedIds };
+}

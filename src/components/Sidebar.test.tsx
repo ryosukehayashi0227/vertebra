@@ -114,4 +114,32 @@ describe('Sidebar', () => {
         // Verify clipboard API call
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('Section 1'));
     });
+
+    it('filters outline nodes by search query', () => {
+        const outline = [
+            { id: '1', text: 'Section A', content: '', level: 0, children: [] },
+            { id: '2', text: 'Section B', content: '', level: 0, children: [] },
+        ];
+        render(
+            <LanguageProvider>
+                <Sidebar {...defaultProps} outline={outline} />
+            </LanguageProvider>
+        );
+
+        // Switch to outline view
+        fireEvent.click(screen.getByText('Outline'));
+
+        // Find search input
+        const searchInput = screen.getByPlaceholderText('Search outline...');
+        fireEvent.change(searchInput, { target: { value: 'Section A' } });
+
+        // 'Section A' should be visible and highlighted
+        const sectionA = screen.getByText('Section A');
+        expect(sectionA).toBeInTheDocument();
+        const listItem = sectionA.closest('li');
+        expect(listItem).toHaveClass('search-match');
+
+        // 'Section B' should NOT be visible
+        expect(screen.queryByText('Section B')).not.toBeInTheDocument();
+    });
 });

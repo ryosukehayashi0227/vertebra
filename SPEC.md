@@ -50,6 +50,12 @@ interface OutlineNode {
   - Supports `before`, `after`, and `inside` drop positions.
   - Visual feedback with blue indicators.
 - **Keyboard Shortcuts**: Common text editing shortcuts tailored for outline mode.
+- **Search & Filter**:
+  - Recursive filtering of nodes based on title and body content.
+  - Automatic expansion of ancestor nodes to preserve context.
+  - **Highlighting**: Visual highlighting of matching nodes.
+- **Clipboard**:
+  - "Copy as Text" context menu action to serialize subtree to indented text.
 
 ### UX Enhancements
 - **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.

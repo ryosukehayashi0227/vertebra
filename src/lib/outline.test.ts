@@ -11,6 +11,7 @@ import {
     outdentNode,
     moveNode,
     serializeNodesToText,
+    filterNodes,
     type OutlineNode,
 } from './outline';
 
@@ -539,5 +540,63 @@ describe('serializeNodesToText', () => {
         // baseLevel 1 means Child 2 (level 1) should start at indent 0
         const result = serializeNodesToText(nodes, "\t", 1);
         expect(result).toBe("Child 2\n");
+    });
+});
+
+describe('filterNodes', () => {
+    const tree: OutlineNode[] = [
+        {
+            id: '1', text: 'Section A', content: '', level: 0, children: [
+                { id: '2', text: 'Item', content: 'Secret detail', level: 1, children: [] },
+                { id: '3', text: 'Hidden', content: '', level: 1, children: [] }
+            ]
+        },
+        {
+            id: '4', text: 'Section B', content: '', level: 0, children: [
+                {
+                    id: '5', text: 'Sub B', content: '', level: 1, children: [
+                        { id: '6', text: 'Target', content: '', level: 2, children: [] }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    it('should match node by text', () => {
+        const { visibleIds, matchedIds } = filterNodes(tree, 'Section A');
+        expect(visibleIds.has('1')).toBe(true);
+        expect(visibleIds.has('4')).toBe(false);
+        expect(matchedIds.has('1')).toBe(true);
+    });
+
+    it('should match node by content', () => {
+        const { visibleIds, matchedIds } = filterNodes(tree, 'Secret');
+        // '2' matches content. '1' is ancestor.
+        expect(visibleIds.has('2')).toBe(true);
+        expect(visibleIds.has('1')).toBe(true);
+        expect(matchedIds.has('2')).toBe(true);
+        expect(matchedIds.has('1')).toBe(false);
+        expect(visibleIds.has('3')).toBe(false);
+    });
+
+    it('should include ancestors of matching node', () => {
+        const { visibleIds } = filterNodes(tree, 'Target');
+        // '6' matches. '5' is parent, '4' is grandparent.
+        expect(visibleIds.has('6')).toBe(true);
+        expect(visibleIds.has('5')).toBe(true);
+        expect(visibleIds.has('4')).toBe(true);
+        expect(visibleIds.has('1')).toBe(false);
+    });
+
+    it('should return all visible nodes if query matches root and child', () => {
+        const { visibleIds } = filterNodes(tree, 'Section');
+        // '1' and '4' match.
+        expect(visibleIds.has('1')).toBe(true);
+        expect(visibleIds.has('4')).toBe(true);
+    });
+
+    it('should be case insensitive', () => {
+        const { visibleIds } = filterNodes(tree, 'target');
+        expect(visibleIds.has('6')).toBe(true);
     });
 });

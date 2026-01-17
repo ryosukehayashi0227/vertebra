@@ -942,3 +942,17 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
 }
+
+/* Search Highlight */
+.search-match .sidebar-outline-text {
+  background-color: rgba(255, 223, 0, 0.4);
+  color: var(--color-text-primary);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.welcome-hint {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
