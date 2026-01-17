@@ -45,6 +45,8 @@ export interface TranslationDictionary {
     'sidebar.openFolder': string;
     'sidebar.newSection': string;
     'sidebar.copyAsText': string;
+    'sidebar.newFile': string;
+    'sidebar.fileNamePlaceholder': string;
 
     // Welcome Screen
     'welcome.title': string;

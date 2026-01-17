@@ -283,10 +283,10 @@ function Sidebar({
                         <div className="sidebar-scrollable">
                             {viewMode === "files" ? (
                                 <>
-                                    <button className="sidebar-new-btn" onClick={() => setIsCreatingFile(true)}><span>+</span> 新規ファイル</button>
+                                    <button className="sidebar-new-btn" onClick={() => setIsCreatingFile(true)}><span>+</span> {t('sidebar.newFile')}</button>
                                     {isCreatingFile && (
                                         <form onSubmit={handleCreateSubmit} className="new-file-form">
-                                            <input type="text" value={newFileName} onChange={(e) => setNewFileName(e.target.value)} placeholder="ファイル名" autoFocus onBlur={() => !newFileName.trim() && setIsCreatingFile(false)} />
+                                            <input type="text" value={newFileName} onChange={(e) => setNewFileName(e.target.value)} placeholder={t('sidebar.fileNamePlaceholder')} autoFocus onBlur={() => !newFileName.trim() && setIsCreatingFile(false)} />
                                         </form>
                                     )}
                                     <ul className="file-list">

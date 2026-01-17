@@ -31,7 +31,7 @@ const defaultProps = {
 
 describe('Sidebar', () => {
     it('renders file list correctly', () => {
-        render(
+        const { rerender } = render(
             <LanguageProvider>
                 <Sidebar {...defaultProps} />
             </LanguageProvider>
@@ -40,6 +40,24 @@ describe('Sidebar', () => {
         const fileBtn = screen.getByText('Files');
         fireEvent.click(fileBtn);
         expect(screen.getByText('test.md')).toBeInTheDocument();
+
+        // Check for "New File" button (translation check)
+        const newFileBtn = screen.getByRole('button', { name: /\+ New File/ });
+        expect(newFileBtn).toBeInTheDocument();
+
+        // Click new file button
+        fireEvent.click(newFileBtn);
+        expect(defaultProps.setIsCreatingFile).toHaveBeenCalledWith(true);
+
+        // Re-render with isCreatingFile=true to simulate parent state update
+        rerender(
+            <LanguageProvider>
+                <Sidebar {...defaultProps} isCreatingFile={true} />
+            </LanguageProvider>
+        );
+
+        // Check placeholder translation
+        expect(screen.getByPlaceholderText('File Name')).toBeInTheDocument();
     });
 
     it('calls onResizeStart when resizer is clicked', () => {
