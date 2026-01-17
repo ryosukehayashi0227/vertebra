@@ -3,6 +3,9 @@ import type { FileEntry } from "../lib/fileSystem";
 import { askConfirm } from "../lib/fileSystem";
 import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes, countStats } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
+import FileList from "./Sidebar/FileList";
+import ContextMenu from "./Sidebar/ContextMenu";
+import SidebarFooter from "./Sidebar/SidebarFooter";
 
 interface SidebarProps {
     folderPath: string | null;
@@ -189,7 +192,6 @@ function Sidebar({
         setDraggingId(id);
     };
 
-
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (newFileName.trim()) {
@@ -227,7 +229,13 @@ function Sidebar({
         setContextMenu(null);
     }, [outline, onDeleteNode, t]);
 
-    // Render outline items with mousedown handler for dragging
+    // Handle file deletion with confirmation
+    const handleDeleteFile = useCallback(async (path: string) => {
+        if (await askConfirm("削除しますか？")) {
+            onDeleteFile(path);
+        }
+    }, [onDeleteFile]);
+
     // Render outline items with mousedown handler for dragging
     const renderOutlineItem = (node: OutlineNode): React.ReactNode => {
         // Search: Check visibility
@@ -332,33 +340,23 @@ function Sidebar({
                     ) : (
                         <div className="sidebar-scrollable">
                             {viewMode === "files" ? (
-                                <>
-                                    <button className="sidebar-new-btn" onClick={() => setIsCreatingFile(true)}><span>+</span> {t('sidebar.newFile')}</button>
-                                    {isCreatingFile && (
-                                        <form onSubmit={handleCreateSubmit} className="new-file-form">
-                                            <input type="text" value={newFileName} onChange={(e) => setNewFileName(e.target.value)} placeholder={t('sidebar.fileNamePlaceholder')} autoFocus onBlur={() => !newFileName.trim() && setIsCreatingFile(false)} />
-                                        </form>
-                                    )}
-                                    <ul className="file-list">
-                                        {currentPath && folderPath && currentPath !== folderPath && (
-                                            <li className="file-item folder-back" onClick={onNavigateUp}>
-                                                <span className="file-icon">⬆️</span>
-                                                <span className="file-name">..</span>
-                                            </li>
-                                        )}
-                                        {files.map(f => (
-                                            <li
-                                                key={f.path}
-                                                className={`file-item ${selectedFilePath === f.path ? "selected" : ""} ${f.is_dir ? "folder" : ""}`}
-                                                onClick={() => f.is_dir ? onNavigateToFolder(f.path) : onSelectFile(f.path)}
-                                                onContextMenu={(e) => { e.preventDefault(); !f.is_dir && setContextMenu({ x: e.clientX, y: e.clientY, targetId: f.path, type: "file" }); }}
-                                            >
-                                                <span className="file-icon">{f.is_dir ? "📁" : "📄"}</span>
-                                                <span className="file-name">{f.name}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </>
+                                <FileList
+                                    files={files}
+                                    currentPath={currentPath}
+                                    folderPath={folderPath}
+                                    selectedFilePath={selectedFilePath}
+                                    isCreatingFile={isCreatingFile}
+                                    newFileName={newFileName}
+                                    onNewFileNameChange={setNewFileName}
+                                    onCreateSubmit={handleCreateSubmit}
+                                    onNavigateUp={onNavigateUp}
+                                    onNavigateToFolder={onNavigateToFolder}
+                                    onSelectFile={onSelectFile}
+                                    onSetIsCreatingFile={setIsCreatingFile}
+                                    onContextMenu={(e, path) => {
+                                        setContextMenu({ x: e.clientX, y: e.clientY, targetId: path, type: "file" });
+                                    }}
+                                />
                             ) : (
                                 <div className="sidebar-outline-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <div style={{ padding: '8px 8px 4px 8px' }}>
@@ -395,88 +393,30 @@ function Sidebar({
                 </nav>
             )}
 
-            <div className={`sidebar-footer ${isCollapsed ? "collapsed" : ""}`}>
-                {onToggleSplitView && (
-                    <button
-                        className={`action-btn ${isSplitView ? 'active' : ''}`}
-                        onClick={onToggleSplitView}
-                        title="Split View"
-                    >
-                        ⏐
-                    </button>
-                )}
-                {onOpenSettings && (
-                    <button
-                        className="action-btn"
-                        onClick={onOpenSettings}
-                        title="Settings"
-                    >
-                        ⚙
-                    </button>
-                )}
-                <div style={{ flex: 1 }}></div>
-                <button className="toggle-btn" onClick={onToggleCollapse}>{isCollapsed ? "▶" : "◀"}</button>
-            </div>
+            <SidebarFooter
+                isCollapsed={isCollapsed}
+                isSplitView={isSplitView}
+                onToggleSplitView={onToggleSplitView}
+                onOpenSettings={onOpenSettings}
+                onToggleCollapse={onToggleCollapse}
+            />
 
             {contextMenu && (
-                <div
-                    className="context-menu"
-                    style={{
-                        left: contextMenu.x,
-                        top: contextMenu.y,
-                        position: 'fixed',
-                        zIndex: 1000,
-                        backgroundColor: 'var(--color-bg-secondary)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '6px',
-                        padding: '4px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                        minWidth: '160px'
-                    }}
-                >
-                    {contextMenu.type === "file" ? (
-                        <button
-                            style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }}
-                            onClick={async () => {
-                                if (await askConfirm("削除しますか？")) {
-                                    onDeleteFile(contextMenu.targetId);
-                                }
-                                setContextMenu(null);
-                            }}
-                        >
-                            削除
-                        </button>
-                    ) : (
-                        <>
-                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => handleCopyAsText(contextMenu.targetId)}>{t('sidebar.copyAsText')}</button>
-                            <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
-                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onIndent(contextMenu.targetId); setContextMenu(null); }}>インデント (Tab)</button>
-                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onOutdent(contextMenu.targetId); setContextMenu(null); }}>アウトデント (Shift+Tab)</button>
-                            <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
-                            <button
-                                style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: '#ff4d4f', cursor: 'pointer' }}
-                                onClick={() => handleDeleteNode(contextMenu.targetId)}
-                            >
-                                {t('sidebar.deleteNode')}
-                            </button>
-                            {onOpenInSecondaryPane && (
-                                <>
-                                    <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
-                                    <button
-                                        style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }}
-                                        onClick={() => { onOpenInSecondaryPane(contextMenu.targetId); setContextMenu(null); }}
-                                    >
-                                        右側で開く
-                                    </button>
-                                </>
-                            )}
-                        </>
-                    )}
-                </div>
+                <ContextMenu
+                    x={contextMenu.x}
+                    y={contextMenu.y}
+                    targetId={contextMenu.targetId}
+                    type={contextMenu.type}
+                    onClose={() => setContextMenu(null)}
+                    onDeleteFile={handleDeleteFile}
+                    onCopyAsText={handleCopyAsText}
+                    onIndent={onIndent}
+                    onOutdent={onOutdent}
+                    onDeleteNode={handleDeleteNode}
+                    onOpenInSecondaryPane={onOpenInSecondaryPane}
+                />
             )}
+
             {onResizeStart && (
                 <div
                     className="sidebar-resizer"
