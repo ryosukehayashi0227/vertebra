@@ -40,6 +40,10 @@ interface OutlineNode {
 
 ### File Management
 - **Open Folder**: Read directory contents (recursively or flat listing).
+- **Folder Navigation**:
+  - Drill down into subdirectories without changing the root scope.
+  - "Back" navigation implementation.
+  - Context-aware creation of files in the currently viewed directory.
 - **CRUD**: Create, Read, Update, Delete Markdown files.
 - **Native Menus**: File, Edit, View, Window menus fully integrated.
 
@@ -76,6 +80,10 @@ interface OutlineNode {
 - **Settings Screen**: Dedicated modal for managing preferences (Language, Theme), accessible via menu or sidebar icon.
 - **Sidebar**: Resizable width, persisting to `localStorage`.
 - **Typography**: Global font size adjustment (Zoom In/Out), persisting to `localStorage` via CSS variables.
+- **Session Restoration**:
+  - Automatically restores the last opened folder and file on startup.
+  - Persists UI state (Outline/Files view, Split View state, selected node).
+  - Robust handling of "fresh start" scenarios (empty state).
 
 ### Internationalization (i18n)
 - **Language Support**: English (en) and Japanese (ja).

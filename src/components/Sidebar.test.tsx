@@ -15,12 +15,15 @@ vi.mock('../lib/fileSystem', async (importOriginal) => {
 // Mock props
 const defaultProps = {
     folderPath: '/test/folder',
+    currentPath: '/test/folder',
     files: [
         { name: 'test.md', path: '/test/folder/test.md', is_dir: false }
     ],
     selectedFilePath: null,
     onSelectFile: vi.fn(),
     onOpenFolder: vi.fn(),
+    onNavigateToFolder: vi.fn(),
+    onNavigateUp: vi.fn(),
     onCreateFile: vi.fn(),
     onDeleteFile: vi.fn(),
     isCollapsed: false,
@@ -203,5 +206,132 @@ describe('Sidebar', () => {
         // countStats("", node.content).chars -> "Five chars" is 10 length
         expect(screen.getByText('10')).toBeInTheDocument();
         expect(screen.getByText('10')).toHaveClass('sidebar-node-stats');
+    });
+
+    describe('Folder Navigation', () => {
+        it('calls onNavigateToFolder when folder is clicked', () => {
+            const props = {
+                ...defaultProps,
+                files: [
+                    { name: 'test.md', path: '/test/folder/test.md', is_dir: false },
+                    { name: 'subfolder', path: '/test/folder/subfolder', is_dir: true }
+                ]
+            };
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...props} />
+                </LanguageProvider>
+            );
+
+            // Switch to Files view
+            fireEvent.click(screen.getByText('Files'));
+
+            // Click on folder
+            const folderItem = screen.getByText('subfolder').closest('.file-item');
+            fireEvent.click(folderItem!);
+
+            expect(props.onNavigateToFolder).toHaveBeenCalledWith('/test/folder/subfolder');
+        });
+
+        it('shows back button when in subfolder', () => {
+            const props = {
+                ...defaultProps,
+                folderPath: '/test/folder',
+                currentPath: '/test/folder/subfolder',
+                files: [
+                    { name: 'nested.md', path: '/test/folder/subfolder/nested.md', is_dir: false }
+                ]
+            };
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...props} />
+                </LanguageProvider>
+            );
+
+            // Switch to Files view
+            fireEvent.click(screen.getByText('Files'));
+
+            // Back button should be visible
+            const backButton = screen.getByText('..').closest('.folder-back');
+            expect(backButton).toBeInTheDocument();
+        });
+
+        it('hides back button at root level', () => {
+            const props = {
+                ...defaultProps,
+                folderPath: '/test/folder',
+                currentPath: '/test/folder',
+                files: [
+                    { name: 'test.md', path: '/test/folder/test.md', is_dir: false }
+                ]
+            };
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...props} />
+                </LanguageProvider>
+            );
+
+            // Switch to Files view
+            fireEvent.click(screen.getByText('Files'));
+
+            // Back button should not be visible
+            expect(screen.queryByText('..')).not.toBeInTheDocument();
+        });
+
+        it('calls onNavigateUp when back button is clicked', () => {
+            const props = {
+                ...defaultProps,
+                folderPath: '/test/folder',
+                currentPath: '/test/folder/subfolder',
+                files: [
+                    { name: 'nested.md', path: '/test/folder/subfolder/nested.md', is_dir: false }
+                ]
+            };
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...props} />
+                </LanguageProvider>
+            );
+
+            // Switch to Files view
+            fireEvent.click(screen.getByText('Files'));
+
+            // Click back button
+            const backButton = screen.getByText('..').closest('.folder-back');
+            fireEvent.click(backButton!);
+
+            expect(props.onNavigateUp).toHaveBeenCalled();
+        });
+
+        it('applies folder class to directory items', () => {
+            const props = {
+                ...defaultProps,
+                files: [
+                    { name: 'test.md', path: '/test/folder/test.md', is_dir: false },
+                    { name: 'subfolder', path: '/test/folder/subfolder', is_dir: true }
+                ]
+            };
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...props} />
+                </LanguageProvider>
+            );
+
+            // Switch to Files view
+            fireEvent.click(screen.getByText('Files'));
+
+            // Folder should have folder class
+            const folderItem = screen.getByText('subfolder').closest('.file-item');
+            expect(folderItem).toHaveClass('folder');
+
+            // File should not have folder class
+            const fileItem = screen.getByText('test.md').closest('.file-item');
+            expect(fileItem).not.toHaveClass('folder');
+        });
     });
 });

@@ -39,7 +39,8 @@ export interface Document {
 
 function AppContent() {
   const { t, setLanguage } = useLanguage();
-  const [folderPath, setFolderPath] = useState<string | null>(null);
+  const [folderPath, setFolderPath] = useState<string | null>(null); // Root folder (cannot navigate above)
+  const [currentPath, setCurrentPath] = useState<string | null>(null); // Currently viewed folder
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
@@ -220,13 +221,13 @@ function AppContent() {
     }
   }, [selectedFilePath]);
 
-  // Load folder contents
+  // Load folder contents (updates currentPath and files, but not folderPath)
   const loadFolder = useCallback(async (path: string) => {
     setIsLoading(true);
     try {
       const entries = await readDirectory(path);
       setFiles(entries);
-      setFolderPath(path);
+      setCurrentPath(path);
     } catch (error) {
       console.error("Failed to load folder:", error);
     } finally {
@@ -234,15 +235,31 @@ function AppContent() {
     }
   }, []);
 
-  // Open folder dialog
+  // Open folder dialog (sets both root and current path)
   const handleOpenFolder = useCallback(async () => {
     const path = await openFolderDialog();
     if (path) {
+      setFolderPath(path); // Set root folder
       await loadFolder(path);
       setSelectedFilePath(null);
       setCurrentDocument(null);
     }
   }, [loadFolder]);
+
+  // Navigate into a subfolder
+  const navigateToFolder = useCallback(async (path: string) => {
+    await loadFolder(path);
+  }, [loadFolder]);
+
+  // Navigate up to parent folder (respecting root boundary)
+  const navigateUp = useCallback(async () => {
+    if (!currentPath || !folderPath) return;
+    if (currentPath === folderPath) return; // Already at root
+    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+    if (parentPath.length >= folderPath.length) {
+      await loadFolder(parentPath);
+    }
+  }, [currentPath, folderPath, loadFolder]);
 
   // Load file content
   const handleSelectFile = useCallback(async (filePath: string) => {
@@ -397,21 +414,21 @@ function AppContent() {
     }
   }, [currentDocument]);
 
-  // Create new file
+  // Create new file (in current directory)
   const handleCreateFile = useCallback(
     async (fileName: string) => {
-      if (!folderPath) return;
+      if (!currentPath) return;
 
-      const newPath = `${folderPath}/${fileName}.md`;
+      const newPath = `${currentPath}/${fileName}.md`;
       try {
         await createFile(newPath);
-        await loadFolder(folderPath);
+        await loadFolder(currentPath);
         await handleSelectFile(newPath);
       } catch (error) {
         console.error("Failed to create file:", error);
       }
     },
-    [folderPath, loadFolder, handleSelectFile]
+    [currentPath, loadFolder, handleSelectFile]
   );
 
   const handleStartCreateFile = useCallback(async () => {
@@ -633,10 +650,13 @@ function AppContent() {
     <div className="app-container">
       <Sidebar
         folderPath={folderPath}
+        currentPath={currentPath}
         files={files}
         selectedFilePath={selectedFilePath}
         onSelectFile={handleSelectFile}
         onOpenFolder={handleOpenFolder}
+        onNavigateToFolder={navigateToFolder}
+        onNavigateUp={navigateUp}
         onCreateFile={handleCreateFile}
         onDeleteFile={handleDeleteFile}
         isCollapsed={isSidebarCollapsed}

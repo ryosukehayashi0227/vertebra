@@ -4,10 +4,13 @@ export async function mockTauri(page: Page) {
     await page.addInitScript(() => {
         // Virtual File System State
         const vfs: Record<string, string> = {};
+        const vfsDirs: Set<string> = new Set();
         const DUMMY_ROOT = '/mock/root';
 
-        // Setup initial files
-        vfs[`${DUMMY_ROOT}/test.md`] = '- Test Node\n  - Child Node';
+        // Setup initial files and folders
+        vfs[`${DUMMY_ROOT}/test.md`] = '- Test Node\\n  - Child Node';
+        vfs[`${DUMMY_ROOT}/subfolder/nested.md`] = '- Nested Node';
+        vfsDirs.add(`${DUMMY_ROOT}/subfolder`);
 
         // Mock Tauri IPC
         const mockInvoke = async (cmd: string, args: any) => {
@@ -16,15 +19,35 @@ export async function mockTauri(page: Page) {
             switch (cmd) {
                 // File System
                 case 'read_directory': {
-                    // Return all files in VFS that start with DUMMY_ROOT (simple flat list simulation)
-                    const files = Object.keys(vfs)
-                        .filter(path => path.startsWith(DUMMY_ROOT))
-                        .map(path => ({
-                            name: path.split('/').pop() || 'unknown',
-                            path: path,
-                            is_dir: false
-                        }));
-                    return files;
+                    const requestedPath = args.path;
+                    const entries: any[] = [];
+
+                    // Find all direct children of the requested path
+                    // 1. Files
+                    Object.keys(vfs).forEach(filePath => {
+                        const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+                        if (dir === requestedPath) {
+                            entries.push({
+                                name: filePath.split('/').pop() || 'unknown',
+                                path: filePath,
+                                is_dir: false
+                            });
+                        }
+                    });
+
+                    // 2. Directories
+                    vfsDirs.forEach(dirPath => {
+                        const parentDir = dirPath.substring(0, dirPath.lastIndexOf('/'));
+                        if (parentDir === requestedPath) {
+                            entries.push({
+                                name: dirPath.split('/').pop() || 'unknown',
+                                path: dirPath,
+                                is_dir: true
+                            });
+                        }
+                    });
+
+                    return entries;
                 }
                 case 'read_file':
                     return vfs[args.path] || '';

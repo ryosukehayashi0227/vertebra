@@ -6,10 +6,13 @@ import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
     folderPath: string | null;
+    currentPath: string | null;
     files: FileEntry[];
     selectedFilePath: string | null;
     onSelectFile: (path: string) => void;
     onOpenFolder: () => void;
+    onNavigateToFolder: (path: string) => void;
+    onNavigateUp: () => void;
     onCreateFile: (name: string) => void;
     onDeleteFile: (path: string) => void;
     isCollapsed: boolean;
@@ -36,10 +39,13 @@ interface SidebarProps {
 
 function Sidebar({
     folderPath,
+    currentPath,
     files,
     selectedFilePath,
     onSelectFile,
     onOpenFolder,
+    onNavigateToFolder,
+    onNavigateUp,
     onCreateFile,
     onDeleteFile,
     onDeleteNode,
@@ -334,8 +340,19 @@ function Sidebar({
                                         </form>
                                     )}
                                     <ul className="file-list">
+                                        {currentPath && folderPath && currentPath !== folderPath && (
+                                            <li className="file-item folder-back" onClick={onNavigateUp}>
+                                                <span className="file-icon">⬆️</span>
+                                                <span className="file-name">..</span>
+                                            </li>
+                                        )}
                                         {files.map(f => (
-                                            <li key={f.path} className={`file-item ${selectedFilePath === f.path ? "selected" : ""}`} onClick={() => !f.is_dir && onSelectFile(f.path)} onContextMenu={(e) => { e.preventDefault(); !f.is_dir && setContextMenu({ x: e.clientX, y: e.clientY, targetId: f.path, type: "file" }); }}>
+                                            <li
+                                                key={f.path}
+                                                className={`file-item ${selectedFilePath === f.path ? "selected" : ""} ${f.is_dir ? "folder" : ""}`}
+                                                onClick={() => f.is_dir ? onNavigateToFolder(f.path) : onSelectFile(f.path)}
+                                                onContextMenu={(e) => { e.preventDefault(); !f.is_dir && setContextMenu({ x: e.clientX, y: e.clientY, targetId: f.path, type: "file" }); }}
+                                            >
                                                 <span className="file-icon">{f.is_dir ? "📁" : "📄"}</span>
                                                 <span className="file-name">{f.name}</span>
                                             </li>
