@@ -50,6 +50,18 @@ npm run tauri dev
 npm run tauri build
 ```
 
+## 🍎 For macOS Users
+
+Since this app is unsigned, you may see a warning saying "it's damaged and can't be opened" on the first launch. In such cases, please try the following steps:
+
+1. **Right-click (Control + click)** the app in the "Applications" folder and select **"Open"**.
+2. Click **"Open"** again in the dialog that appears.
+
+If the above does not work, run the following command in the terminal:
+```bash
+xattr -rc /Applications/vertebra.app
+```
+
 ## Testing
 
 Vertebra uses a comprehensive testing strategy combining Unit, Component, and E2E tests.
