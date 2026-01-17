@@ -3,25 +3,25 @@
 /* Custom CSS Variables for theming */
 :root {
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-bg-sidebar: #f1f5f9;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-border: #e2e8f0;
-  --color-accent: #3b82f6;
-  --color-accent-hover: #2563eb;
+  --color-bg-secondary: #f3f3f3;
+  --color-bg-sidebar: #f3f3f3;
+  --color-text-primary: #1e1e1e;
+  --color-text-secondary: #6e7681;
+  --color-border: #e0e0e0;
+  --color-accent: #0078d4;
+  --color-accent-hover: #106ebe;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg-primary: #0f172a;
-    --color-bg-secondary: #1e293b;
-    --color-bg-sidebar: #1e293b;
-    --color-text-primary: #f8fafc;
-    --color-text-secondary: #94a3b8;
-    --color-border: #334155;
-    --color-accent: #60a5fa;
-    --color-accent-hover: #3b82f6;
+    --color-bg-primary: #1e1e1e;
+    --color-bg-secondary: #252526;
+    --color-bg-sidebar: #252526;
+    --color-text-primary: #cccccc;
+    --color-text-secondary: #858585;
+    --color-border: #3c3c3c;
+    --color-accent: #0e639c;
+    --color-accent-hover: #1177bb;
   }
 }
 
@@ -33,10 +33,11 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
