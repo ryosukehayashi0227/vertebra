@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
+import { listen } from "@tauri-apps/api/event";
 import {
   openFolderDialog,
   readDirectory,
@@ -37,6 +38,26 @@ function App() {
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const isSessionRestored = useRef(false);
+
+  // Save state when folder or file changes (skip until session is restored)
+  useEffect(() => {
+    if (!isSessionRestored.current) return;
+    if (folderPath) {
+      localStorage.setItem('lastFolderPath', folderPath);
+    }
+  }, [folderPath]);
+
+  useEffect(() => {
+    if (!isSessionRestored.current) return;
+    if (selectedFilePath) {
+      console.log('[State Save] Saving file path to localStorage:', selectedFilePath);
+      localStorage.setItem('lastFilePath', selectedFilePath);
+    } else {
+      console.log('[State Save] Removing file path from localStorage');
+      localStorage.removeItem('lastFilePath');
+    }
+  }, [selectedFilePath]);
 
   // Load folder contents
   const loadFolder = useCallback(async (path: string) => {
@@ -64,6 +85,7 @@ function App() {
 
   // Load file content
   const handleSelectFile = useCallback(async (filePath: string) => {
+    console.log('[handleSelectFile] Opening file:', filePath);
     setIsLoading(true);
     try {
       const content = await readFile(filePath);
@@ -78,6 +100,7 @@ function App() {
         isDirty: false,
       });
       setSelectedFilePath(filePath);
+      console.log('[handleSelectFile] File selected, path saved:', filePath);
       // Select the first node by default if it exists
       if (outline.length > 0) {
         setSelectedNodeId(outline[0].id);
@@ -86,6 +109,7 @@ function App() {
       }
     } catch (error) {
       console.error("Failed to load file:", error);
+      throw error; // Re-throw to let caller handle it
     } finally {
       setIsLoading(false);
     }
@@ -185,6 +209,48 @@ function App() {
     handleOutlineChange(newOutline);
   }, [currentDocument, handleOutlineChange]);
 
+  // Restore previous session on mount
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const savedFolderPath = localStorage.getItem('lastFolderPath');
+        const savedFilePath = localStorage.getItem('lastFilePath');
+
+        console.log('[Session Restore] Saved folder:', savedFolderPath);
+        console.log('[Session Restore] Saved file:', savedFilePath);
+
+        if (savedFolderPath) {
+          // First load the folder
+          await loadFolder(savedFolderPath);
+
+          // Then open the file if it was saved
+          if (savedFilePath) {
+            // Small delay to ensure files state is updated
+            setTimeout(async () => {
+              try {
+                console.log('[Session Restore] Attempting to open file:', savedFilePath);
+                await handleSelectFile(savedFilePath);
+                console.log('[Session Restore] File opened successfully');
+              } catch (error) {
+                console.error('[Session Restore] Failed to open file:', error);
+                // Clear invalid file path
+                localStorage.removeItem('lastFilePath');
+              }
+            }, 200);
+          }
+        }
+      } catch (error) {
+        console.error('[Session Restore] Failed to restore session:', error);
+      } finally {
+        // Mark session as restored to enable state saving
+        isSessionRestored.current = true;
+        console.log('[Session Restore] Session restoration complete');
+      }
+    };
+
+    restoreSession();
+  }, [loadFolder, handleSelectFile]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -203,8 +269,7 @@ function App() {
     let unlisten: (() => void)[] = [];
 
     const setupMenuListeners = async () => {
-      const { listen } = await import("@tauri-apps/api/event");
-
+      // Static import is used now
       unlisten.push(await listen("menu-new-file", async () => {
         if (folderPath) {
           setIsCreatingFile(true);

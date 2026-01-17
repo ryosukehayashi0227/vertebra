@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 // Mock Tauri APIs for testing
 const mockInvoke = vi.fn();
 const mockOpen = vi.fn();
-const mockListen = vi.fn(() => Promise.resolve(() => { }));
+const mockListen = vi.fn().mockReturnValue(Promise.resolve(() => { }));
 
 vi.mock('@tauri-apps/api/core', () => ({
     invoke: mockInvoke,
