@@ -6,6 +6,7 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
 ## Features
 
 - **Local Markdown Management**: Open folders, create/read/update/delete Markdown files.
+  - **Folder Navigation**: Navigate into subfolders, create files in current directory, and navigate back to parent folders.
 - **Outline Editing**: 
   - Parse Markdown lists as outline nodes.
   - Drag & Drop reordering (supporting nested structures).

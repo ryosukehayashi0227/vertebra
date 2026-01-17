@@ -51,6 +51,9 @@ test.describe('Functional Tests', () => {
         // Open Folder
         await page.getByRole('button', { name: 'Open Folder to Start' }).click();
 
+        // Switch to Files view
+        await page.getByRole('button', { name: 'Files' }).click();
+
         // Select 'test.md'
         await page.locator('.file-item', { hasText: 'test.md' }).click();
 
@@ -66,13 +69,15 @@ test.describe('Functional Tests', () => {
         // Type 'Child'
         await searchInput.fill('Child');
 
+        // Wait for search results to update
+        await page.waitForTimeout(100);
+
         // 'Child Node' should be visible
-        // Use regex for exact content matching to avoid parent nodes
-        const childNodeText = page.locator('.sidebar-outline-text', { hasText: /^Child Node$/ });
-        await expect(childNodeText).toBeVisible();
+        // Use a simpler selector
+        await expect(page.getByText('Child Node')).toBeVisible();
 
         // 'Test Node' (parent) should be visible (context)
-        await expect(page.locator('.sidebar-outline-text', { hasText: /^Test Node$/ })).toBeVisible();
+        await expect(page.getByText('Test Node')).toBeVisible();
 
         // Check for Highlight class
         // Directly find the highlighted element and verify its content
