@@ -21,9 +21,9 @@ interface SidebarProps {
     onIndent: (id: string) => void;
     onOutdent: (id: string) => void;
     onMoveNode: (sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
+    width?: number;
+    onResizeStart?: () => void;
 }
-
-
 
 function Sidebar({
     folderPath,
@@ -43,7 +43,9 @@ function Sidebar({
     onOutlineChange,
     onIndent,
     onOutdent,
-    onMoveNode
+    onMoveNode,
+    width,
+    onResizeStart
 }: SidebarProps) {
     const [viewMode, setViewMode] = useState<"files" | "outline">("outline");
     const [newFileName, setNewFileName] = useState("");
@@ -51,6 +53,13 @@ function Sidebar({
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
     const listRef = useRef<HTMLUListElement>(null);
+    const [contextMenu, setContextMenu] = useState<{ x: number, y: number, targetId: string, type: "file" | "outline" } | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = () => setContextMenu(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (isCreatingFile) setViewMode("files");
@@ -150,7 +159,6 @@ function Sidebar({
         setDraggingId(id);
     };
 
-    const [contextMenu, setContextMenu] = useState<{ x: number, y: number, targetId: string, type: "file" | "outline" } | null>(null);
 
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -211,7 +219,11 @@ function Sidebar({
     };
 
     return (
-        <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`} onClick={() => setContextMenu(null)}>
+        <aside
+            className={`sidebar ${isCollapsed ? "collapsed" : ""}`}
+            onClick={() => setContextMenu(null)}
+            style={width ? { width: `${width}px`, minWidth: `${width}px`, flexBasis: `${width}px` } : undefined}
+        >
             <div className="sidebar-header">
                 {!isCollapsed && (
                     <div className="view-selector">
@@ -296,6 +308,15 @@ function Sidebar({
                         </>
                     )}
                 </div>
+            )}
+            {onResizeStart && (
+                <div
+                    className="sidebar-resizer"
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        onResizeStart();
+                    }}
+                />
             )}
         </aside>
     );

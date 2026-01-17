@@ -38,6 +38,92 @@ function App() {
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Font Size state
+  const [fontSize, setFontSize] = useState<number>(14);
+
+  // Sidebar resize state
+  const [sidebarWidth, setSidebarWidth] = useState<number>(240);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+
+  // Restore sidebar width from localStorage
+  useEffect(() => {
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    if (savedWidth) {
+      const width = parseInt(savedWidth, 10);
+      if (!isNaN(width)) {
+        setSidebarWidth(width);
+      }
+    }
+  }, []);
+
+  // Persist sidebar width
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', sidebarWidth.toString());
+  }, [sidebarWidth]);
+
+  // Sidebar Resize Handlers
+  const startResizing = useCallback(() => {
+    setIsResizingSidebar(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizingSidebar(false);
+  }, []);
+
+  const resizeCallback = useCallback((e: MouseEvent) => {
+    if (isResizingSidebar) {
+      setSidebarWidth(_ => {
+        const newWidth = e.clientX;
+        if (newWidth < 150) return 150;
+        if (newWidth > 600) return 600;
+        return newWidth;
+      });
+    }
+  }, [isResizingSidebar]);
+
+  useEffect(() => {
+    if (isResizingSidebar) {
+      window.addEventListener("mousemove", resizeCallback);
+      window.addEventListener("mouseup", stopResizing);
+    } else {
+      window.removeEventListener("mousemove", resizeCallback);
+      window.removeEventListener("mouseup", stopResizing);
+    }
+    return () => {
+      window.removeEventListener("mousemove", resizeCallback);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizingSidebar, resizeCallback, stopResizing]);
+
+  // Restore font size from localStorage
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem('userFontSize');
+    if (savedFontSize) {
+      const size = parseInt(savedFontSize, 10);
+      if (!isNaN(size)) {
+        setFontSize(size);
+      }
+    }
+  }, []);
+
+  // Apply font size to CSS variable and persist
+  useEffect(() => {
+    document.documentElement.style.setProperty('--user-font-size', `${fontSize}px`);
+    localStorage.setItem('userFontSize', fontSize.toString());
+  }, [fontSize]);
+
+  const zoomIn = useCallback(() => {
+    setFontSize(prev => Math.min(prev + 1, 24));
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setFontSize(prev => Math.max(prev - 1, 10));
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    setFontSize(14);
+  }, []);
+
   const isSessionRestored = useRef(false);
 
   // Save state when folder or file changes (skip until session is restored)
@@ -296,6 +382,21 @@ function App() {
         setCurrentDocument(null);
         setSelectedNodeId(null);
       }));
+
+      unlisten.push(await listen("menu-zoom-in", () => {
+        console.log("Zoom In Event Received");
+        zoomIn();
+      }));
+
+      unlisten.push(await listen("menu-zoom-out", () => {
+        console.log("Zoom Out Event Received");
+        zoomOut();
+      }));
+
+      unlisten.push(await listen("menu-zoom-reset", () => {
+        console.log("Zoom Reset Event Received");
+        resetZoom();
+      }));
     };
 
     setupMenuListeners();
@@ -326,6 +427,8 @@ function App() {
         onIndent={handleIndent}
         onOutdent={handleOutdent}
         onMoveNode={handleMoveNode}
+        width={sidebarWidth}
+        onResizeStart={startResizing}
       />
       <main className="main-content">
         {isLoading ? (

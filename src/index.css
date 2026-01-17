@@ -36,7 +36,7 @@ body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--user-font-size, 14px);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

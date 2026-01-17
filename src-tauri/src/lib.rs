@@ -163,6 +163,22 @@ pub fn run() {
 
             // View menu
             let view_menu = SubmenuBuilder::new(app, "表示")
+                .item(
+                    &MenuItemBuilder::with_id("zoom_in", "拡大")
+                        .accelerator("CmdOrCtrl+=")
+                        .build(app)?,
+                )
+                .item(
+                    &MenuItemBuilder::with_id("zoom_out", "縮小")
+                        .accelerator("CmdOrCtrl+-")
+                        .build(app)?,
+                )
+                .item(
+                    &MenuItemBuilder::with_id("zoom_reset", "サイズをリセット")
+                        .accelerator("CmdOrCtrl+0")
+                        .build(app)?,
+                )
+                .separator()
                 .item(&PredefinedMenuItem::fullscreen(
                     app,
                     Some("フルスクリーン"),
@@ -205,6 +221,15 @@ pub fn run() {
                 }
                 "close_file" => {
                     let _ = app.emit("menu-close-file", ());
+                }
+                "zoom_in" => {
+                    let _ = app.emit("menu-zoom-in", ());
+                }
+                "zoom_out" => {
+                    let _ = app.emit("menu-zoom-out", ());
+                }
+                "zoom_reset" => {
+                    let _ = app.emit("menu-zoom-reset", ());
                 }
                 _ => {}
             }
