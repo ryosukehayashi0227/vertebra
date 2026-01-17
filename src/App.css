@@ -840,7 +840,28 @@
 .simple-editor-wrapper {
   flex: 1;
   display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.line-numbers {
+  width: 40px;
+  min-width: 40px;
+  padding: 0 8px 0 0;
+  display: flex;
   flex-direction: column;
+  user-select: none;
+  font-family: inherit;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  opacity: 0.3;
+  text-align: right;
+  border-right: 1px solid transparent;
+}
+
+.line-number {
+  height: 1.7em;
 }
 
 .simple-textarea {

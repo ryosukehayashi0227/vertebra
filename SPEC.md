@@ -90,7 +90,9 @@ interface OutlineNode {
 
 ## 5. Future Roadmap
 
-- [ ] **Rich Text Editor**: Enhanced support for bold, italic, links within body content.
+- [ ] **Rich Text Editing**: Bold, Italic, Headings (via Tiptap).
+- **Line Numbers**: Displays logical line numbers in a gutter.
+- **Status Bar**: Real-time word and character counts.
 - [ ] **Search**: Global search across the open folder.
 - [ ] **Export**: Export to PDF, DOCX, etc.
 - [ ] **Theming**: User-customizable themes.

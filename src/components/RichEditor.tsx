@@ -22,8 +22,18 @@ const RichEditor = ({ content, onChange, placeholder }: RichEditorProps) => {
         adjustHeight();
     }, [content]);
 
+    const lines = content.split('\n');
+    const lineNumbers = lines.length > 0 ? lines.length : 1;
+
     return (
         <div className="simple-editor-wrapper">
+            <div className="line-numbers">
+                {Array.from({ length: lineNumbers }).map((_, i) => (
+                    <div key={i + 1} className="line-number">
+                        {i + 1}
+                    </div>
+                ))}
+            </div>
             <textarea
                 ref={textareaRef}
                 className="simple-textarea"
