@@ -199,6 +199,12 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
     let app_menu = SubmenuBuilder::new(app, t_app_name)
         .item(&PredefinedMenuItem::about(app, Some(t_about), None)?)
         .separator()
+        .item(
+            &MenuItemBuilder::with_id("settings", if is_ja { "設定..." } else { "Settings..." })
+                .accelerator("CmdOrCtrl+,")
+                .build(app)?,
+        )
+        .separator()
         .item(&PredefinedMenuItem::hide(app, Some(t_hide))?)
         .item(&PredefinedMenuItem::hide_others(app, Some(t_hide_others))?)
         .item(&PredefinedMenuItem::show_all(app, Some(t_show_all))?)
@@ -352,6 +358,9 @@ pub fn run() {
                 }
                 "redo" => {
                     let _ = app.emit("menu-redo", ());
+                }
+                "settings" => {
+                    let _ = app.emit("menu-settings", ());
                 }
                 _ => {}
             }

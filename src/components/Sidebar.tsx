@@ -30,6 +30,8 @@ interface SidebarProps {
     isSplitView?: boolean;
     onToggleSplitView?: () => void;
     onOpenInSecondaryPane?: (nodeId: string) => void;
+    // Settings
+    onOpenSettings?: () => void;
 }
 
 function Sidebar({
@@ -56,7 +58,8 @@ function Sidebar({
     onResizeStart,
     isSplitView,
     onToggleSplitView,
-    onOpenInSecondaryPane
+    onOpenInSecondaryPane,
+    onOpenSettings
 }: SidebarProps) {
     const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<"files" | "outline">("outline");
@@ -318,6 +321,15 @@ function Sidebar({
                             title="Split View"
                         >
                             ⏐
+                        </button>
+                    )}
+                    {onOpenSettings && (
+                        <button
+                            className="action-btn"
+                            onClick={onOpenSettings}
+                            title="Settings"
+                        >
+                            ⚙
                         </button>
                     )}
                     <button className="toggle-btn" onClick={onToggleCollapse}>{isCollapsed ? "▶" : "◀"}</button>

@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from 'vitest';
 import Editor from './Editor';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import type { Document } from '../App';
-import type { OutlineNode } from '../lib/outline';
 
 const mockDocument: Document = {
     path: '/test/file.md',

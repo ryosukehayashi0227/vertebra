@@ -77,5 +77,13 @@ export const ja: TranslationDictionary = {
     // Stats
     'stats.chars': '文字',
     'stats.words': '単語',
-    'stats.total': '合計'
+    'stats.total': '合計',
+
+    // Settings
+    'settings.title': '設定',
+    'settings.theme': 'テーマ',
+    'settings.themeLight': 'ライト',
+    'settings.themeDark': 'ダーク',
+    'settings.themeAuto': '自動',
+    'settings.language': '言語'
 };

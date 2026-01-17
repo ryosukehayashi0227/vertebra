@@ -24,6 +24,8 @@ import {
 } from "./lib/outline";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import SettingsModal from "./components/SettingsModal";
 
 export interface Document {
   path: string;
@@ -59,6 +61,9 @@ function AppContent() {
   const [isSplitView, setIsSplitView] = useState(false);
   const [secondaryNodeId, setSecondaryNodeId] = useState<string | null>(null);
   const [activePane, setActivePane] = useState<'primary' | 'secondary'>('primary');
+
+  // Settings modal state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Restore sidebar width from localStorage
   useEffect(() => {
@@ -482,6 +487,10 @@ function AppContent() {
         setLanguage('ja');
       }));
 
+      unlisten.push(await listen("menu-settings", () => {
+        setIsSettingsOpen(true);
+      }));
+
       unlisten.push(await listen("menu-zoom-in", () => {
         console.log("Zoom In Event Received");
         zoomIn();
@@ -549,6 +558,7 @@ function AppContent() {
           setSecondaryNodeId(nodeId);
           if (!isSplitView) setIsSplitView(true);
         }}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
       <main className="main-content">
         {isLoading ? (
@@ -673,15 +683,18 @@ function AppContent() {
           />
         )}
       </main>
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }
 
 function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

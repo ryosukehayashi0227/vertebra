@@ -2,6 +2,7 @@
 
 /* Custom CSS Variables for theming */
 :root {
+  /* Light theme as default */
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f3f3f3;
   --color-bg-sidebar: #f3f3f3;
@@ -12,17 +13,28 @@
   --color-accent-hover: #106ebe;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-primary: #1e1e1e;
-    --color-bg-secondary: #252526;
-    --color-bg-sidebar: #252526;
-    --color-text-primary: #cccccc;
-    --color-text-secondary: #858585;
-    --color-border: #3c3c3c;
-    --color-accent: #0e639c;
-    --color-accent-hover: #1177bb;
-  }
+/* Dark theme */
+[data-theme="dark"] {
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #252526;
+  --color-bg-sidebar: #252526;
+  --color-text-primary: #cccccc;
+  --color-text-secondary: #858585;
+  --color-border: #3c3c3c;
+  --color-accent: #0e639c;
+  --color-accent-hover: #1177bb;
+}
+
+/* Light theme (explicit) */
+[data-theme="light"] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f3f3f3;
+  --color-bg-sidebar: #f3f3f3;
+  --color-text-primary: #1e1e1e;
+  --color-text-secondary: #6e7681;
+  --color-border: #e0e0e0;
+  --color-accent: #0078d4;
+  --color-accent-hover: #106ebe;
 }
 
 /* Base styles */

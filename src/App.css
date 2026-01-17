@@ -195,6 +195,11 @@
   color: var(--color-text-primary);
 }
 
+.action-btn[title="Settings"] {
+  font-size: 1.1em;
+  padding: 4px 6px;
+}
+
 .sidebar-new-btn {
   width: 100%;
   display: flex;

@@ -77,5 +77,13 @@ export const en: TranslationDictionary = {
     // Stats
     'stats.chars': 'chars',
     'stats.words': 'words',
-    'stats.total': 'Total'
+    'stats.total': 'Total',
+
+    // Settings
+    'settings.title': 'Settings',
+    'settings.theme': 'Theme',
+    'settings.themeLight': 'Light',
+    'settings.themeDark': 'Dark',
+    'settings.themeAuto': 'Auto',
+    'settings.language': 'Language'
 };

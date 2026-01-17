@@ -78,4 +78,12 @@ export interface TranslationDictionary {
     'stats.chars': string;
     'stats.words': string;
     'stats.total': string;
+
+    // Settings
+    'settings.title': string;
+    'settings.theme': string;
+    'settings.themeLight': string;
+    'settings.themeDark': string;
+    'settings.themeAuto': string;
+    'settings.language': string;
 }
