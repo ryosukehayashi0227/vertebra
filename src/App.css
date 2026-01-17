@@ -539,6 +539,7 @@
   display: flex;
   flex-direction: column;
   margin-top: 8px;
+  overflow-y: auto;
 }
 
 .tiptap-editor {
@@ -966,6 +967,8 @@
   outline: none;
   min-height: 500px;
   padding-bottom: 200px;
+  white-space: pre;
+  overflow-x: auto;
 }
 
 .simple-textarea::placeholder {
