@@ -28,6 +28,10 @@ import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import SettingsModal from "./components/SettingsModal";
+import { useSidebarResize } from "./hooks/useSidebarResize";
+import { useFontSize } from "./hooks/useFontSize";
+import { useUndoRedo } from "./hooks/useUndoRedo";
+import { useSplitView } from "./hooks/useSplitView";
 
 export interface Document {
   path: string;
@@ -54,19 +58,14 @@ function AppContent() {
   const DEBOUNCE_DELAY = 500; // ms
   const isSessionRestore = useRef(true); // Flag to track if we're restoring session
   const [isLoading, setIsLoading] = useState(false);
-  // Font Size state
-  const [fontSize, setFontSize] = useState<number>(14);
+  // Font Size (from hook)
+  const { fontSize, zoomIn, zoomOut, resetZoom } = useFontSize();
 
   // Initialization state (Start true to prevent flicker, turn off if no session)
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Sidebar resize state
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    const saved = localStorage.getItem('sidebarWidth');
-    const parsed = saved ? parseInt(saved, 10) : 240;
-    return isNaN(parsed) ? 240 : parsed;
-  });
-  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  // Sidebar resize (from hook)
+  const { sidebarWidth, startResizing } = useSidebarResize();
 
   // Split View state
   const [isSplitView, setIsSplitView] = useState(() => {
@@ -82,10 +81,6 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
 
-  // Persist sidebar width
-  useEffect(() => {
-    localStorage.setItem('sidebarWidth', sidebarWidth.toString());
-  }, [sidebarWidth]);
 
   // Persist split view state
   useEffect(() => {
@@ -136,68 +131,9 @@ function AppContent() {
     }
   }, [currentDocument, isSplitView, secondaryNodeId]);
 
-  // Sidebar Resize Handlers
-  const startResizing = useCallback(() => {
-    setIsResizingSidebar(true);
-  }, []);
 
-  const stopResizing = useCallback(() => {
-    setIsResizingSidebar(false);
-  }, []);
 
-  const resizeCallback = useCallback((e: MouseEvent) => {
-    if (isResizingSidebar) {
-      setSidebarWidth(_ => {
-        const newWidth = e.clientX;
-        if (newWidth < 150) return 150;
-        if (newWidth > 600) return 600;
-        return newWidth;
-      });
-    }
-  }, [isResizingSidebar]);
 
-  useEffect(() => {
-    if (isResizingSidebar) {
-      window.addEventListener("mousemove", resizeCallback);
-      window.addEventListener("mouseup", stopResizing);
-    } else {
-      window.removeEventListener("mousemove", resizeCallback);
-      window.removeEventListener("mouseup", stopResizing);
-    }
-    return () => {
-      window.removeEventListener("mousemove", resizeCallback);
-      window.removeEventListener("mouseup", stopResizing);
-    };
-  }, [isResizingSidebar, resizeCallback, stopResizing]);
-
-  // Restore font size from localStorage
-  useEffect(() => {
-    const savedFontSize = localStorage.getItem('userFontSize');
-    if (savedFontSize) {
-      const size = parseInt(savedFontSize, 10);
-      if (!isNaN(size)) {
-        setFontSize(size);
-      }
-    }
-  }, []);
-
-  // Apply font size to CSS variable and persist
-  useEffect(() => {
-    document.documentElement.style.setProperty('--user-font-size', `${fontSize}px`);
-    localStorage.setItem('userFontSize', fontSize.toString());
-  }, [fontSize]);
-
-  const zoomIn = useCallback(() => {
-    setFontSize(prev => Math.min(prev + 1, 24));
-  }, []);
-
-  const zoomOut = useCallback(() => {
-    setFontSize(prev => Math.max(prev - 1, 10));
-  }, []);
-
-  const resetZoom = useCallback(() => {
-    setFontSize(14);
-  }, []);
 
   const isSessionRestored = useRef(false);
   const isRestoreStarted = useRef(false);
