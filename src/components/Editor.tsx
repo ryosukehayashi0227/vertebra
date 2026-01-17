@@ -23,7 +23,9 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveBut
         return findNodeById(document.outline, selectedNodeId);
     }, [document.outline, selectedNodeId]);
 
-    const [metaKeyLabel, setMetaKeyLabel] = useState('⌘');
+    const [metaKeyLabel, setMetaKeyLabel] = useState(() => {
+        return navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl+';
+    });
 
     useEffect(() => {
         getMetaKeyLabel().then(setMetaKeyLabel);
