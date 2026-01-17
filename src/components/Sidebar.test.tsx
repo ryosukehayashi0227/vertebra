@@ -1,7 +1,16 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Sidebar from './Sidebar';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { vi } from 'vitest';
+
+// Mock fileSystem
+vi.mock('../lib/fileSystem', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../lib/fileSystem')>();
+    return {
+        ...actual,
+        askConfirm: vi.fn(),
+    };
+});
 
 // Mock props
 const defaultProps = {
@@ -25,6 +34,7 @@ const defaultProps = {
     onIndent: vi.fn(),
     onOutdent: vi.fn(),
     onMoveNode: vi.fn(),
+    onDeleteNode: vi.fn(),
     width: 200,
     onResizeStart: vi.fn(),
 };
@@ -141,5 +151,39 @@ describe('Sidebar', () => {
 
         // 'Section B' should NOT be visible
         expect(screen.queryByText('Section B')).not.toBeInTheDocument();
+    });
+
+    it('shows confirm dialog and calls onDeleteNode', async () => {
+        const outline = [
+            {
+                id: '1', text: 'Parent', content: '', level: 0, children: [
+                    { id: '2', text: 'Child', content: '', level: 1, children: [] }
+                ]
+            }
+        ];
+        render(
+            <LanguageProvider>
+                <Sidebar {...defaultProps} outline={outline} />
+            </LanguageProvider>
+        );
+
+        // Mock askConfirm
+        const { askConfirm } = await import('../lib/fileSystem');
+        vi.mocked(askConfirm).mockResolvedValue(true);
+
+        // Switch to outline view
+        fireEvent.click(screen.getByText('Outline'));
+
+        // Open context menu
+        fireEvent.contextMenu(screen.getByText('Parent'));
+
+        // Click delete
+        const deleteBtn = screen.getByText('Delete');
+        fireEvent.click(deleteBtn);
+
+        expect(askConfirm).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(defaultProps.onDeleteNode).toHaveBeenCalledWith('1');
+        });
     });
 });

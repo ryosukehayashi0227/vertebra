@@ -238,8 +238,16 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
 
     // Edit menu
     let edit_menu = SubmenuBuilder::new(app, t_edit)
-        .item(&PredefinedMenuItem::undo(app, Some(t_undo))?)
-        .item(&PredefinedMenuItem::redo(app, Some(t_redo))?)
+        .item(
+            &MenuItemBuilder::with_id("undo", t_undo)
+                .accelerator("CmdOrCtrl+Z")
+                .build(app)?,
+        )
+        .item(
+            &MenuItemBuilder::with_id("redo", t_redo)
+                .accelerator("CmdOrCtrl+Shift+Z")
+                .build(app)?,
+        )
         .separator()
         .item(&PredefinedMenuItem::cut(app, Some(t_cut))?)
         .item(&PredefinedMenuItem::copy(app, Some(t_copy))?)
@@ -338,6 +346,12 @@ pub fn run() {
                 }
                 "change_lang_ja" => {
                     let _ = app.emit("menu-change-lang-ja", ());
+                }
+                "undo" => {
+                    let _ = app.emit("menu-undo", ());
+                }
+                "redo" => {
+                    let _ = app.emit("menu-redo", ());
                 }
                 _ => {}
             }

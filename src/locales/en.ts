@@ -48,6 +48,8 @@ export const en: TranslationDictionary = {
     'sidebar.newFile': 'New File',
     'sidebar.fileNamePlaceholder': 'File Name',
     'sidebar.searchPlaceholder': 'Search outline...',
+    'sidebar.deleteNode': 'Delete',
+    'sidebar.confirmDeleteNode': 'Are you sure you want to delete this node and its children?',
 
     // Welcome Screen
     'welcome.title': 'Welcome to Vertebra',

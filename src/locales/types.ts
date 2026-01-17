@@ -48,6 +48,8 @@ export interface TranslationDictionary {
     'sidebar.newFile': string;
     'sidebar.fileNamePlaceholder': string;
     'sidebar.searchPlaceholder': string;
+    'sidebar.deleteNode': string;
+    'sidebar.confirmDeleteNode': string;
 
     // Welcome Screen
     'welcome.title': string;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { FileEntry } from "../lib/fileSystem";
+import { askConfirm } from "../lib/fileSystem";
 import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -22,6 +23,7 @@ interface SidebarProps {
     onIndent: (id: string) => void;
     onOutdent: (id: string) => void;
     onMoveNode: (sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
+    onDeleteNode: (id: string) => void;
     width?: number;
     onResizeStart?: () => void;
 }
@@ -34,6 +36,7 @@ function Sidebar({
     onOpenFolder,
     onCreateFile,
     onDeleteFile,
+    onDeleteNode,
     isCollapsed,
     onToggleCollapse,
     isCreatingFile,
@@ -194,6 +197,19 @@ function Sidebar({
         }
         setContextMenu(null);
     }, [outline]);
+
+    // Delete node
+    const handleDeleteNode = useCallback(async (nodeId: string) => {
+        const node = findNodeById(outline, nodeId);
+        if (node) {
+            const hasChildren = node.children.length > 0;
+            const confirmMsg = t('sidebar.confirmDeleteNode');
+            if (!hasChildren || await askConfirm(confirmMsg)) {
+                onDeleteNode(nodeId);
+            }
+        }
+        setContextMenu(null);
+    }, [outline, onDeleteNode, t]);
 
     // Render outline items with mousedown handler for dragging
     // Render outline items with mousedown handler for dragging
@@ -372,13 +388,30 @@ function Sidebar({
                     }}
                 >
                     {contextMenu.type === "file" ? (
-                        <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => confirm("削除しますか？") && onDeleteFile(contextMenu.targetId)}>削除</button>
+                        <button
+                            style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }}
+                            onClick={async () => {
+                                if (await askConfirm("削除しますか？")) {
+                                    onDeleteFile(contextMenu.targetId);
+                                }
+                                setContextMenu(null);
+                            }}
+                        >
+                            削除
+                        </button>
                     ) : (
                         <>
                             <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => handleCopyAsText(contextMenu.targetId)}>{t('sidebar.copyAsText')}</button>
                             <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
                             <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onIndent(contextMenu.targetId); setContextMenu(null); }}>インデント (Tab)</button>
                             <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onOutdent(contextMenu.targetId); setContextMenu(null); }}>アウトデント (Shift+Tab)</button>
+                            <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                            <button
+                                style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: '#ff4d4f', cursor: 'pointer' }}
+                                onClick={() => handleDeleteNode(contextMenu.targetId)}
+                            >
+                                {t('sidebar.deleteNode')}
+                            </button>
                         </>
                     )}
                 </div>

@@ -48,6 +48,8 @@ export const ja: TranslationDictionary = {
     'sidebar.newFile': '新規ファイル',
     'sidebar.fileNamePlaceholder': 'ファイル名',
     'sidebar.searchPlaceholder': 'アウトラインを検索...',
+    'sidebar.deleteNode': '削除',
+    'sidebar.confirmDeleteNode': 'このノードとそのすべての子要素を削除してもよろしいですか？',
 
     // Welcome Screen
     'welcome.title': 'Vertebraへようこそ',

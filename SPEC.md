@@ -43,13 +43,12 @@ interface OutlineNode {
 - **CRUD**: Create, Read, Update, Delete Markdown files.
 - **Native Menus**: File, Edit, View, Window menus fully integrated.
 
-### Outline Operations
-- **Parsing**: Advanced parser that distinguishes body content from child nodes based on indentation.
-- **Drag & Drop**:
-  - Custom mouse-event based implementation (bypassing WebKit drag issues).
-  - Supports `before`, `after`, and `inside` drop positions.
-  - Visual feedback with blue indicators.
-- **Keyboard Shortcuts**: Common text editing shortcuts tailored for outline mode.
+- **Outline Operations**:
+  - [x] Parsing: Advanced parser that distinguishes body content from child nodes based on indentation.
+  - [x] Drag & Drop: Mouse-event based implementation with visual feedback.
+  - [x] Node Deletion: Recursive deletion of nodes and children with native asynchronous confirmation.
+  - [x] Undo/Redo: Global history management for all discrete outline operations (Delete, Move, Indent, Outdent).
+  - [x] Keyboard Shortcuts: Common text editing and history shortcuts tailored for outline mode.
 - **Search & Filter**:
   - Recursive filtering of nodes based on title and body content.
   - Automatic expansion of ancestor nodes to preserve context.

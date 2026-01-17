@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, ask } from "@tauri-apps/plugin-dialog";
 
 export interface FileEntry {
     name: string;
@@ -59,4 +59,13 @@ export async function deleteFile(path: string): Promise<void> {
  */
 export async function renameFile(oldPath: string, newPath: string): Promise<void> {
     return invoke<void>("rename_file", { oldPath, newPath });
+}
+/**
+ * Show a native confirmation dialog
+ */
+export async function askConfirm(message: string): Promise<boolean> {
+    return ask(message, {
+        title: "Vertebra",
+        kind: "warning",
+    });
 }

@@ -18,6 +18,7 @@ import {
   indentNode,
   outdentNode,
   moveNode,
+  removeNode,
 } from "./lib/outline";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
@@ -39,6 +40,9 @@ function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const undoStack = useRef<OutlineNode[][]>([]);
+  const redoStack = useRef<OutlineNode[][]>([]);
+  const MAX_HISTORY = 50;
   const [isLoading, setIsLoading] = useState(false);
   // Font Size state
   const [fontSize, setFontSize] = useState<number>(14);
@@ -189,6 +193,11 @@ function AppContent() {
       });
       setSelectedFilePath(filePath);
       console.log('[handleSelectFile] File selected, path saved:', filePath);
+
+      // Clear undo/redo history on file switch
+      undoStack.current = [];
+      redoStack.current = [];
+
       // Select the first node by default if it exists
       if (outline.length > 0) {
         setSelectedNodeId(outline[0].id);
@@ -216,6 +225,38 @@ function AppContent() {
       };
     });
   }, []);
+
+  const pushHistory = useCallback(() => {
+    if (!currentDocument) return;
+    // Clone outline to avoid mutation issues in history
+    undoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
+    if (undoStack.current.length > MAX_HISTORY) {
+      undoStack.current.shift();
+    }
+    redoStack.current = []; // Clear redo stack on new action
+  }, [currentDocument]);
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.current.length === 0 || !currentDocument) return;
+
+    // Push current state to redo stack
+    redoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
+
+    // Pop from undo stack
+    const previousOutline = undoStack.current.pop()!;
+    handleOutlineChange(previousOutline);
+  }, [currentDocument, handleOutlineChange]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.current.length === 0 || !currentDocument) return;
+
+    // Push current state to undo stack
+    undoStack.current.push(JSON.parse(JSON.stringify(currentDocument.outline)));
+
+    // Pop from redo stack
+    const nextOutline = redoStack.current.pop()!;
+    handleOutlineChange(nextOutline);
+  }, [currentDocument, handleOutlineChange]);
 
   // Save file
   const handleSave = useCallback(async () => {
@@ -281,21 +322,34 @@ function AppContent() {
 
   const handleIndent = useCallback((id: string) => {
     if (!currentDocument) return;
+    pushHistory();
     const newOutline = indentNode(currentDocument.outline, id);
     handleOutlineChange(newOutline);
-  }, [currentDocument, handleOutlineChange]);
+  }, [currentDocument, handleOutlineChange, pushHistory]);
 
   const handleOutdent = useCallback((id: string) => {
     if (!currentDocument) return;
+    pushHistory();
     const newOutline = outdentNode(currentDocument.outline, id);
     handleOutlineChange(newOutline);
-  }, [currentDocument, handleOutlineChange]);
+  }, [currentDocument, handleOutlineChange, pushHistory]);
 
   const handleMoveNode = useCallback((sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => {
     if (!currentDocument) return;
+    pushHistory();
     const newOutline = moveNode(currentDocument.outline, sourceId, targetId, position);
     handleOutlineChange(newOutline);
-  }, [currentDocument, handleOutlineChange]);
+  }, [currentDocument, handleOutlineChange, pushHistory]);
+
+  const handleDeleteNode = useCallback((id: string) => {
+    if (!currentDocument) return;
+    pushHistory();
+    const newOutline = removeNode(currentDocument.outline, id);
+    handleOutlineChange(newOutline);
+    if (selectedNodeId === id) {
+      setSelectedNodeId(null);
+    }
+  }, [currentDocument, handleOutlineChange, selectedNodeId, pushHistory]);
 
   // Restore previous session on mount
   useEffect(() => {
@@ -346,11 +400,23 @@ function AppContent() {
         e.preventDefault();
         handleSave();
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "y") {
+        e.preventDefault();
+        handleRedo();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSave]);
+  }, [handleSave, handleUndo, handleRedo]);
 
   // Menu event listeners
   useEffect(() => {
@@ -406,6 +472,14 @@ function AppContent() {
         console.log("Zoom Reset Event Received");
         resetZoom();
       }));
+
+      unlisten.push(await listen("menu-undo", () => {
+        handleUndo();
+      }));
+
+      unlisten.push(await listen("menu-redo", () => {
+        handleRedo();
+      }));
     };
 
     setupMenuListeners();
@@ -413,7 +487,7 @@ function AppContent() {
     return () => {
       unlisten.forEach(fn => fn());
     };
-  }, [folderPath, handleOpenFolder, handleSave]);
+  }, [folderPath, handleOpenFolder, handleSave, handleUndo, handleRedo]);
 
   return (
     <div className="app-container">
@@ -436,6 +510,7 @@ function AppContent() {
         onIndent={handleIndent}
         onOutdent={handleOutdent}
         onMoveNode={handleMoveNode}
+        onDeleteNode={handleDeleteNode}
         width={sidebarWidth}
         onResizeStart={startResizing}
       />

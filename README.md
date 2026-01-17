@@ -10,6 +10,8 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
   - Parse Markdown lists as outline nodes.
   - Drag & Drop reordering (supporting nested structures).
   - Indent/Outdent operations.
+  - **Node Deletion**: Recursive deletion with async native confirmation dialogs.
+  - **Undo/Redo Support**: Global history for all discrete outline operations (`Cmd+Z`, `Cmd+Shift+Z`).
   - **Advanced Search**: Filter outline nodes with real-time highlighting.
   - **Data Portability**: Copy outline as plain text (with hierarchy preserved).
 - **UI/UX**:
