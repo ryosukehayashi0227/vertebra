@@ -1,6 +1,6 @@
 # Vertebra Test Documentation
 
-## Unit Tests (132 tests)
+## Unit Tests (142 tests)
 
 ### App.test.tsx (3 tests)
 | Test Name | Description |
