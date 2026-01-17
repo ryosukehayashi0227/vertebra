@@ -6,6 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tauri + React + Typescript</title>
   </head>
+    <script>
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('vertebra-theme');
+          const isDark = savedTheme === 'dark' || 
+            (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+            (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          
+          if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            // Set background color immediately to prevent white flash
+            document.documentElement.style.backgroundColor = '#1e1e1e';
+          }
+        } catch (e) {
+          console.error('Failed to initialize theme:', e);
+        }
+      })();
+    </script>
 
   <body>
     <div id="root"></div>
