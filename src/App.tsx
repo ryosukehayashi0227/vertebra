@@ -30,8 +30,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import SettingsModal from "./components/SettingsModal";
 import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
-import { useUndoRedo } from "./hooks/useUndoRedo";
-import { useSplitView } from "./hooks/useSplitView";
+
 
 export interface Document {
   path: string;
@@ -59,7 +58,7 @@ function AppContent() {
   const isSessionRestore = useRef(true); // Flag to track if we're restoring session
   const [isLoading, setIsLoading] = useState(false);
   // Font Size (from hook)
-  const { fontSize, zoomIn, zoomOut, resetZoom } = useFontSize();
+  const { zoomIn, zoomOut, resetZoom } = useFontSize();
 
   // Initialization state (Start true to prevent flicker, turn off if no session)
   const [isInitializing, setIsInitializing] = useState(true);
