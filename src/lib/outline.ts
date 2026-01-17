@@ -451,3 +451,32 @@ function isDescendantOf(root: OutlineNode, targetId: string): boolean {
     }
     return false;
 }
+
+/**
+ * Convert outline nodes to plain text with indentation
+ * Used for "Copy as Text" functionality
+ */
+export function serializeNodesToText(nodes: OutlineNode[], indentChar: string = "\t", baseLevel: number = 0): string {
+    let result = "";
+    for (const node of nodes) {
+        // Calculate indent relative to the base level
+        const relativeLevel = Math.max(0, node.level - baseLevel);
+        const indent = indentChar.repeat(relativeLevel);
+
+        result += `${indent}${node.text}\n`;
+
+        // Include body content, indented one level deeper
+        if (node.content) {
+            const contentIndent = indentChar.repeat(relativeLevel + 1);
+            const lines = node.content.split('\n');
+            for (const line of lines) {
+                result += `${contentIndent}${line}\n`;
+            }
+        }
+
+        if (node.children.length > 0) {
+            result += serializeNodesToText(node.children, indentChar, baseLevel);
+        }
+    }
+    return result;
+}

@@ -10,6 +10,7 @@ import {
     indentNode,
     outdentNode,
     moveNode,
+    serializeNodesToText,
     type OutlineNode,
 } from './outline';
 
@@ -505,5 +506,38 @@ describe('moveNode', () => {
             expect(result[0].children[0].children[0].id).toBe('3');
             expect(result[0].children[0].children[0].level).toBe(2);
         });
+    });
+});
+
+describe('serializeNodesToText', () => {
+    it('should serialize nodes with correct indentation', () => {
+        const nodes: OutlineNode[] = [
+            {
+                id: '1', text: 'Root', content: '', level: 0, children: [
+                    { id: '2', text: 'Child 1', content: '', level: 1, children: [] },
+                    {
+                        id: '3', text: 'Child 2', content: 'Body line 1\nBody line 2', level: 1, children: [
+                            { id: '4', text: 'Grandchild', content: '', level: 2, children: [] }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Should use relative indentation if baseLevel is correct (0)
+        const result = serializeNodesToText(nodes, "\t", 0);
+        // Root (0 indent) -> Child (1 indent) -> Child Body (2 indent) -> Grandchild (2 indent)
+        const expected = "Root\n\tChild 1\n\tChild 2\n\t\tBody line 1\n\t\tBody line 2\n\t\tGrandchild\n";
+        expect(result).toBe(expected);
+    });
+
+    it('should respect baseLevel for partial tree copy', () => {
+        const nodes: OutlineNode[] = [
+            { id: '3', text: 'Child 2', content: '', level: 1, children: [] }
+        ];
+
+        // baseLevel 1 means Child 2 (level 1) should start at indent 0
+        const result = serializeNodesToText(nodes, "\t", 1);
+        expect(result).toBe("Child 2\n");
     });
 });

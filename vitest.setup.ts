@@ -50,3 +50,10 @@ vi.stubGlobal('localStorage', localStorageMock);
 // Mock window.scroll
 window.scroll = vi.fn();
 window.scrollTo = vi.fn();
+
+// Mock navigator.clipboard
+Object.assign(navigator, {
+    clipboard: {
+        writeText: vi.fn(),
+    },
+});

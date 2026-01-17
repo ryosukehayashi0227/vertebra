@@ -69,4 +69,31 @@ describe('Sidebar', () => {
         const sidebar = container.querySelector('.sidebar');
         expect(sidebar).toHaveStyle(`width: ${width}px`);
     });
+
+    it('shows context menu and handles copy action', async () => {
+        const outline = [{ id: '1', text: 'Section 1', content: '', level: 0, children: [] }];
+        render(
+            <LanguageProvider>
+                <Sidebar {...defaultProps} outline={outline} />
+            </LanguageProvider>
+        );
+
+        // Ensure we are in outline view (default)
+        // Ensure we are in outline view
+        fireEvent.click(screen.getByText('Outline'));
+
+        // Right click on the item
+        const item = screen.getByText('Section 1');
+        fireEvent.contextMenu(item);
+
+        // Expect menu item to appear
+        const copyBtn = screen.getByText('Copy as Text');
+        expect(copyBtn).toBeInTheDocument();
+
+        // Click it
+        fireEvent.click(copyBtn);
+
+        // Verify clipboard API call
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('Section 1'));
+    });
 });

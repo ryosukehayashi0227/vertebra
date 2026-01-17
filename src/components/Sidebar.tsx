@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { FileEntry } from "../lib/fileSystem";
-import { type OutlineNode, createNode, findNodeById, appendChildNode } from "../lib/outline";
+import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
@@ -171,6 +171,21 @@ function Sidebar({
         }
     };
 
+    // Copy node as text
+    const handleCopyAsText = useCallback(async (nodeId: string) => {
+        const node = findNodeById(outline, nodeId);
+        if (node) {
+            const text = serializeNodesToText([node], "\t", node.level);
+            try {
+                await navigator.clipboard.writeText(text);
+                console.log("Copied to clipboard");
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        }
+        setContextMenu(null);
+    }, [outline]);
+
     // Render outline items with mousedown handler for dragging
     const renderOutlineItem = (node: OutlineNode): React.ReactNode => {
         const isSelected = selectedNodeId === node.id;
@@ -300,13 +315,32 @@ function Sidebar({
             )}
 
             {contextMenu && (
-                <div className="context-menu" style={{ left: contextMenu.x, top: contextMenu.y }}>
+                <div
+                    className="context-menu"
+                    style={{
+                        left: contextMenu.x,
+                        top: contextMenu.y,
+                        position: 'fixed',
+                        zIndex: 1000,
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '6px',
+                        padding: '4px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        minWidth: '160px'
+                    }}
+                >
                     {contextMenu.type === "file" ? (
-                        <button onClick={() => confirm("削除しますか？") && onDeleteFile(contextMenu.targetId)}>削除</button>
+                        <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => confirm("削除しますか？") && onDeleteFile(contextMenu.targetId)}>削除</button>
                     ) : (
                         <>
-                            <button onClick={() => { onIndent(contextMenu.targetId); setContextMenu(null); }}>インデント (Tab)</button>
-                            <button onClick={() => { onOutdent(contextMenu.targetId); setContextMenu(null); }}>アウトデント (Shift+Tab)</button>
+                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => handleCopyAsText(contextMenu.targetId)}>{t('sidebar.copyAsText')}</button>
+                            <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onIndent(contextMenu.targetId); setContextMenu(null); }}>インデント (Tab)</button>
+                            <button style={{ textAlign: 'left', padding: '6px 12px', border: 'none', background: 'none', color: 'var(--color-text-primary)', cursor: 'pointer' }} onClick={() => { onOutdent(contextMenu.targetId); setContextMenu(null); }}>アウトデント (Shift+Tab)</button>
                         </>
                     )}
                 </div>

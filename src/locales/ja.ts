@@ -44,6 +44,7 @@ export const ja: TranslationDictionary = {
     'sidebar.files': 'ファイル',
     'sidebar.openFolder': 'フォルダを開く',
     'sidebar.newSection': '新しいセクション',
+    'sidebar.copyAsText': 'テキストとしてコピー',
 
     // Welcome Screen
     'welcome.title': 'Vertebraへようこそ',

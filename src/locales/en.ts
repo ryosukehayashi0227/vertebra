@@ -44,6 +44,7 @@ export const en: TranslationDictionary = {
     'sidebar.files': 'Files',
     'sidebar.openFolder': 'Open Folder',
     'sidebar.newSection': 'New Section',
+    'sidebar.copyAsText': 'Copy as Text',
 
     // Welcome Screen
     'welcome.title': 'Welcome to Vertebra',
