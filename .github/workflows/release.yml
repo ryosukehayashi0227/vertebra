@@ -1,0 +1,49 @@
+name: "publish"
+on:
+  push:
+    # release/v1.0 などのブランチに push した時に実行
+    branches:
+      - main 
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows, Mac, Linux 全てのバイナリを作る設定
+        platform: [macos-latest, ubuntu-22.04, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      # Linuxビルドに必要なライブラリのインストール
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: npm install
+
+      # Tauri公式のビルド＆リリースアクション
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__ # tauri.conf.json の version を自動取得
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets below to download the installer."
+          releaseDraft: true
+          prerelease: false
