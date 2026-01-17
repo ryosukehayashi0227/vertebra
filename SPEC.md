@@ -107,6 +107,3 @@ interface OutlineNode {
 - [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
 - [ ] **Global Search**: Search across all files in the open folder.
 - [ ] **Export**: Export to PDF, DOCX, etc.
-- [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
-- [ ] **Global Search**: Search across all files in the open folder.
-- [ ] **Export**: Export to PDF, DOCX, etc.

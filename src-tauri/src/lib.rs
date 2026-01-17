@@ -213,6 +213,7 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .build()?;
 
     // File menu
+    #[allow(unused_mut)]
     let mut file_menu_builder = SubmenuBuilder::new(app, t_file)
         .item(
             &MenuItemBuilder::with_id("new_file", t_new_file)
