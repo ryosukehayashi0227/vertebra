@@ -72,5 +72,10 @@ export const ja: TranslationDictionary = {
     'editor.contentPlaceholder': 'ここから本文を入力...',
 
     // Loading
-    'loading': '読み込み中...'
+    'loading': '読み込み中...',
+
+    // Stats
+    'stats.chars': '文字',
+    'stats.words': '単語',
+    'stats.total': '合計'
 };

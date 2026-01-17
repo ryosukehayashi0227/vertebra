@@ -72,5 +72,10 @@ export const en: TranslationDictionary = {
     'editor.contentPlaceholder': 'Enter content here...',
 
     // Loading
-    'loading': 'Loading...'
+    'loading': 'Loading...',
+
+    // Stats
+    'stats.chars': 'chars',
+    'stats.words': 'words',
+    'stats.total': 'Total'
 };

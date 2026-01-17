@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { FileEntry } from "../lib/fileSystem";
 import { askConfirm } from "../lib/fileSystem";
-import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes } from "../lib/outline";
+import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes, countStats } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
@@ -258,7 +258,8 @@ function Sidebar({
                     >
                         {hasChildren ? (isCollapsed ? '▸' : '▾') : ''}
                     </button>
-                    <span className="sidebar-outline-text">{node.text}</span>
+                    <span className="sidebar-outline-text">{node.text || t('sidebar.newSection')}</span>
+                    <span className="sidebar-node-stats">{countStats("", node.content).chars}</span>
                 </div>
                 {hasChildren && !isCollapsed && (
                     <ul className="sidebar-outline-children">

@@ -186,4 +186,22 @@ describe('Sidebar', () => {
             expect(defaultProps.onDeleteNode).toHaveBeenCalledWith('1');
         });
     });
+
+    it('displays character counts for outline nodes', () => {
+        const outline = [
+            { id: '1', text: 'Section 1', content: 'Five chars', level: 0, children: [] },
+        ];
+        render(
+            <LanguageProvider>
+                <Sidebar {...defaultProps} outline={outline} />
+            </LanguageProvider>
+        );
+
+        // Switch to outline view
+        fireEvent.click(screen.getByText('Outline'));
+
+        // countStats("", node.content).chars -> "Five chars" is 10 length
+        expect(screen.getByText('10')).toBeInTheDocument();
+        expect(screen.getByText('10')).toHaveClass('sidebar-node-stats');
+    });
 });

@@ -519,3 +519,40 @@ export function filterNodes(nodes: OutlineNode[], query: string): { visibleIds: 
     nodes.forEach(node => recurse(node));
     return { visibleIds, matchedIds };
 }
+
+/**
+ * Count statistics (characters and words) for a given text and content
+ */
+export function countStats(text: string, content: string): { chars: number, words: number } {
+    const combined = (text + " " + content).trim();
+    if (!combined) return { chars: 0, words: 0 };
+
+    // For Japanese/Chinese, character count is often more important.
+    // For English, word count is standard.
+    // We provide both.
+    const chars = combined.length;
+
+    // Basic word count logic: split by whitespace and filter out empty strings
+    // This isn't perfect for all languages but works well for English.
+    const words = combined.split(/\s+/).filter(w => w.length > 0).length;
+
+    return { chars, words };
+}
+
+/**
+ * Calculate total statistics for an entire outline tree
+ */
+export function calculateTotalStats(nodes: OutlineNode[]): { chars: number, words: number } {
+    let totalChars = 0;
+    let totalWords = 0;
+
+    function recurse(node: OutlineNode) {
+        const stats = countStats(node.text, node.content);
+        totalChars += stats.chars;
+        totalWords += stats.words;
+        node.children.forEach(recurse);
+    }
+
+    nodes.forEach(recurse);
+    return { chars: totalChars, words: totalWords };
+}

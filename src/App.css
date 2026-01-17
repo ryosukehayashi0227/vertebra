@@ -361,9 +361,20 @@
 }
 
 .sidebar-outline-text {
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sidebar-node-stats {
+  font-size: 0.75em;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  padding: 0 4px;
+  min-width: 24px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .sidebar-scrollable {
@@ -389,6 +400,33 @@
   max-width: 100%;
   margin: 0;
   width: 100%;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 4px 16px;
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  z-index: 10;
+}
+
+.status-item {
+  display: flex;
+  gap: 4px;
+}
+
+.status-label {
+  opacity: 0.7;
+}
+
+.status-value {
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
 .editor-container.empty {

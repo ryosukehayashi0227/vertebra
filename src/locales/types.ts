@@ -73,4 +73,9 @@ export interface TranslationDictionary {
 
     // Loading
     'loading': string;
+
+    // Stats
+    'stats.chars': string;
+    'stats.words': string;
+    'stats.total': string;
 }

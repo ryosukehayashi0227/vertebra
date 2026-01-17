@@ -12,6 +12,8 @@ import {
     moveNode,
     serializeNodesToText,
     filterNodes,
+    countStats,
+    calculateTotalStats,
     type OutlineNode,
 } from './outline';
 
@@ -598,5 +600,46 @@ describe('filterNodes', () => {
     it('should be case insensitive', () => {
         const { visibleIds } = filterNodes(tree, 'target');
         expect(visibleIds.has('6')).toBe(true);
+    });
+});
+
+describe('stats logic', () => {
+    it('countStats should count characters and words correctly', () => {
+        const { chars, words } = countStats("Hello", "World this is a test");
+        // "Hello World this is a test" -> whitespace included
+        expect(chars).toBe(26);
+        expect(words).toBe(6);
+    });
+
+    it('countStats should handle empty input', () => {
+        const { chars, words } = countStats("", "");
+        expect(chars).toBe(0);
+        expect(words).toBe(0);
+    });
+
+    it('calculateTotalStats should sum stats for the whole tree', () => {
+        const nodes: OutlineNode[] = [
+            {
+                id: '1',
+                text: 'Node 1',
+                content: 'Content 1',
+                level: 0,
+                children: [
+                    {
+                        id: '2',
+                        text: 'Child',
+                        content: 'More',
+                        level: 1,
+                        children: []
+                    }
+                ]
+            }
+        ];
+        // "Node 1 Content 1" (16 chars, 4 words)
+        // "Child More" (10 chars, 2 words)
+        // Total: 26 chars, 6 words
+        const { chars, words } = calculateTotalStats(nodes);
+        expect(chars).toBe(26);
+        expect(words).toBe(6);
     });
 });

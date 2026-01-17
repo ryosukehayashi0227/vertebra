@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
+import StatusBar from "./components/StatusBar";
 import { listen } from "@tauri-apps/api/event";
 import {
   openFolderDialog,
@@ -19,6 +20,7 @@ import {
   outdentNode,
   moveNode,
   removeNode,
+  calculateTotalStats,
 } from "./lib/outline";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
@@ -575,6 +577,12 @@ function AppContent() {
               </div>
             )}
           </div>
+        )}
+        {currentDocument && (
+          <StatusBar
+            chars={calculateTotalStats(currentDocument.outline).chars}
+            words={calculateTotalStats(currentDocument.outline).words}
+          />
         )}
       </main>
     </div>
