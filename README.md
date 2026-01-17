@@ -22,8 +22,11 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
   - **Granular Font Size**: Adjustable text size (Zoom In/Out) persisting across sessions.
   - **Resizable Sidebar**: Draggable sidebar width with state persistence.
   - **Workflow**: Guided welcome screen for new users.
-  - Auto-switching sidebar views (Files / Outline).
-  - Native application menus (File, Edit, View, Window) with dynamic language updates.
+  - **Split View**: Multi-pane editing with independent scroll and node selection. State is restored across sessions.
+  - **Theme Support**: Light, Dark, and System modes. 
+  - **Auto-switching sidebar views**: Automatically toggles between Files and Outline based on context.
+  - **Native application menus**: File, Edit, View, Window menus with dynamic language updates.
+  - **Settings**: Dedicated settings modal accessible via Menu or Sidebar.
 
 ## Tech Stack
 - **Core:** [Tauri v2](https://tauri.app/) (Rust)

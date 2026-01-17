@@ -65,9 +65,15 @@ interface OutlineNode {
 
 ### UX Enhancements
 - **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.
+- **Split View**:
+  - Two-pane editing capability for multitasking (e.g., viewing different parts of the outline simultaneously).
+  - Resizable panes and independent scrolling.
+  - State restoration (preserves open files, active pane, and scroll position across sessions) with robust handling for React Strict Mode.
 - **Workflow**: Guided steps for new users (Open Folder -> Select File -> Edit).
 
 ### Customization & Persistence
+- **Theme**: Light, Dark, and Auto (OS preference) modes. Persisting to `localStorage`.
+- **Settings Screen**: Dedicated modal for managing preferences (Language, Theme), accessible via menu or sidebar icon.
 - **Sidebar**: Resizable width, persisting to `localStorage`.
 - **Typography**: Global font size adjustment (Zoom In/Out), persisting to `localStorage` via CSS variables.
 
@@ -101,4 +107,6 @@ interface OutlineNode {
 - [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
 - [ ] **Global Search**: Search across all files in the open folder.
 - [ ] **Export**: Export to PDF, DOCX, etc.
-- [ ] **Theming**: User-customizable themes and color schemes.
+- [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
+- [ ] **Global Search**: Search across all files in the open folder.
+- [ ] **Export**: Export to PDF, DOCX, etc.
