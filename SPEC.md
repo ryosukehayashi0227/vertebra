@@ -47,7 +47,7 @@ interface OutlineNode {
   - [x] Parsing: Advanced parser that distinguishes body content from child nodes based on indentation.
   - [x] Drag & Drop: Mouse-event based implementation with visual feedback.
   - [x] Node Deletion: Recursive deletion of nodes and children with native asynchronous confirmation.
-  - [x] Undo/Redo: Global history management for all discrete outline operations (Delete, Move, Indent, Outdent).
+  - [x] Undo/Redo: Global history management for all operations (Delete, Move, Indent, Outdent, Text Editing) with 500ms debounce for text changes.
   - [x] Keyboard Shortcuts: Common text editing and history shortcuts tailored for outline mode.
 - **Search & Filter**:
   - Recursive filtering of nodes based on title and body content.
@@ -55,6 +55,13 @@ interface OutlineNode {
   - **Highlighting**: Visual highlighting of matching nodes.
 - **Clipboard**:
   - "Copy as Text" context menu action to serialize subtree to indented text.
+
+### Editor Features
+- **Line Numbers**: Displays logical line numbers in a left-side gutter, synced with content.
+- **Writing Statistics**: 
+  - Node-level character counts displayed in sidebar.
+  - Document-level character and word counts in bottom status bar.
+  - Real-time updates as user types.
 
 ### UX Enhancements
 - **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.
@@ -90,9 +97,8 @@ interface OutlineNode {
 
 ## 5. Future Roadmap
 
-- [ ] **Rich Text Editing**: Bold, Italic, Headings (via Tiptap).
-- **Line Numbers**: Displays logical line numbers in a gutter.
-- **Status Bar**: Real-time word and character counts.
-- [ ] **Search**: Global search across the open folder.
+- [ ] **Focus Mode**: Zoom into a specific node and its subtree.
+- [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
+- [ ] **Global Search**: Search across all files in the open folder.
 - [ ] **Export**: Export to PDF, DOCX, etc.
-- [ ] **Theming**: User-customizable themes.
+- [ ] **Theming**: User-customizable themes and color schemes.

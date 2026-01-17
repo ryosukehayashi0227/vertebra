@@ -11,9 +11,12 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
   - Drag & Drop reordering (supporting nested structures).
   - Indent/Outdent operations.
   - **Node Deletion**: Recursive deletion with async native confirmation dialogs.
-  - **Undo/Redo Support**: Global history for all discrete outline operations (`Cmd+Z`, `Cmd+Shift+Z`).
+  - **Undo/Redo Support**: Global history for all operations including text editing (`Cmd+Z`, `Cmd+Shift+Z`) with intelligent debouncing.
   - **Advanced Search**: Filter outline nodes with real-time highlighting.
   - **Data Portability**: Copy outline as plain text (with hierarchy preserved).
+- **Writing Tools**:
+  - **Line Numbers**: Visual gutter displaying logical line numbers in the editor.
+  - **Writing Statistics**: Real-time character and word counts at both node-level (sidebar) and document-level (status bar).
 - **UI/UX**:
   - **Internationalization (i18n)**: English and Japanese support (auto-detect OS language).
   - **Granular Font Size**: Adjustable text size (Zoom In/Out) persisting across sessions.
