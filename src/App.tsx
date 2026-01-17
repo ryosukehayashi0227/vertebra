@@ -45,6 +45,8 @@ function AppContent() {
   const undoStack = useRef<OutlineNode[][]>([]);
   const redoStack = useRef<OutlineNode[][]>([]);
   const MAX_HISTORY = 50;
+  const debounceTimer = useRef<number | null>(null);
+  const DEBOUNCE_DELAY = 500; // ms
   const [isLoading, setIsLoading] = useState(false);
   // Font Size state
   const [fontSize, setFontSize] = useState<number>(14);
@@ -237,6 +239,21 @@ function AppContent() {
     }
     redoStack.current = []; // Clear redo stack on new action
   }, [currentDocument]);
+
+  // Update outline with debounced history push (for text editing)
+  const handleOutlineChangeWithHistory = useCallback((newOutline: OutlineNode[]) => {
+    handleOutlineChange(newOutline);
+
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timer to push history after delay
+    debounceTimer.current = setTimeout(() => {
+      pushHistory();
+    }, DEBOUNCE_DELAY);
+  }, [handleOutlineChange, pushHistory]);
 
   const handleUndo = useCallback(() => {
     if (undoStack.current.length === 0 || !currentDocument) return;
@@ -525,7 +542,7 @@ function AppContent() {
           <Editor
             document={currentDocument}
             selectedNodeId={selectedNodeId}
-            onOutlineChange={handleOutlineChange}
+            onOutlineChange={handleOutlineChangeWithHistory}
             onSave={handleSave}
           />
         ) : (
