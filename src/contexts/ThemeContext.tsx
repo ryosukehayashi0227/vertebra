@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, type ReactNode } from 'react';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const effectiveTheme = theme === 'auto' ? systemTheme : theme;
 
     // Apply theme to document
-    useEffect(() => {
+    useLayoutEffect(() => {
         document.documentElement.setAttribute('data-theme', effectiveTheme);
     }, [effectiveTheme]);
 

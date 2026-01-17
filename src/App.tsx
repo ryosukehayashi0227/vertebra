@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
 import StatusBar from "./components/StatusBar";
+import SplashScreen from "./components/SplashScreen";
 import { listen } from "@tauri-apps/api/event";
 import {
   openFolderDialog,
@@ -54,6 +55,9 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(false);
   // Font Size state
   const [fontSize, setFontSize] = useState<number>(14);
+
+  // Initialization state (Start true to prevent flicker, turn off if no session)
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Sidebar resize state
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
@@ -493,18 +497,15 @@ function AppContent() {
 
           // Then open the file if it was saved
           if (savedFilePath) {
-            // Small delay to ensure files state is updated
-            setTimeout(async () => {
-              try {
-                console.log('[Session Restore] Attempting to open file:', savedFilePath);
-                await handleSelectFile(savedFilePath);
-                console.log('[Session Restore] File opened successfully');
-              } catch (error) {
-                console.error('[Session Restore] Failed to open file:', error);
-                // Clear invalid file path
-                localStorage.removeItem('lastFilePath');
-              }
-            }, 200);
+            try {
+              console.log('[Session Restore] Attempting to open file:', savedFilePath);
+              await handleSelectFile(savedFilePath);
+              console.log('[Session Restore] File opened successfully');
+            } catch (error) {
+              console.error('[Session Restore] Failed to open file:', error);
+              // Clear invalid file path
+              localStorage.removeItem('lastFilePath');
+            }
           }
         }
       } catch (error) {
@@ -512,6 +513,7 @@ function AppContent() {
       } finally {
         // Mark session as restored to enable state saving
         isSessionRestored.current = true;
+        setIsInitializing(false); // Hide splash screen
         console.log('[Session Restore] Session restoration complete');
       }
     };
@@ -618,6 +620,14 @@ function AppContent() {
       unlisten.forEach(fn => fn());
     };
   }, [folderPath, handleOpenFolder, handleSave, handleUndo, handleRedo]);
+
+  if (isInitializing) {
+    return (
+      <ThemeProvider>
+        <SplashScreen />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <div className="app-container">
