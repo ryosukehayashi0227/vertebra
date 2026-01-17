@@ -21,6 +21,7 @@ import {
   moveNode,
   removeNode,
   calculateTotalStats,
+  findNodeById,
 } from "./lib/outline";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
@@ -49,37 +50,86 @@ function AppContent() {
   const MAX_HISTORY = 50;
   const debounceTimer = useRef<number | null>(null);
   const DEBOUNCE_DELAY = 500; // ms
+  const isSessionRestore = useRef(true); // Flag to track if we're restoring session
   const [isLoading, setIsLoading] = useState(false);
   // Font Size state
   const [fontSize, setFontSize] = useState<number>(14);
 
   // Sidebar resize state
-  const [sidebarWidth, setSidebarWidth] = useState<number>(240);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('sidebarWidth');
+    const parsed = saved ? parseInt(saved, 10) : 240;
+    return isNaN(parsed) ? 240 : parsed;
+  });
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
 
   // Split View state
-  const [isSplitView, setIsSplitView] = useState(false);
+  const [isSplitView, setIsSplitView] = useState(() => {
+    return localStorage.getItem('splitView') === 'true';
+  });
   const [secondaryNodeId, setSecondaryNodeId] = useState<string | null>(null);
-  const [activePane, setActivePane] = useState<'primary' | 'secondary'>('primary');
+  const [activePane, setActivePane] = useState<'primary' | 'secondary'>(() => {
+    const saved = localStorage.getItem('activePane');
+    return (saved === 'primary' || saved === 'secondary') ? saved : 'primary';
+  });
 
   // Settings modal state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Restore sidebar width from localStorage
-  useEffect(() => {
-    const savedWidth = localStorage.getItem('sidebarWidth');
-    if (savedWidth) {
-      const width = parseInt(savedWidth, 10);
-      if (!isNaN(width)) {
-        setSidebarWidth(width);
-      }
-    }
-  }, []);
 
   // Persist sidebar width
   useEffect(() => {
     localStorage.setItem('sidebarWidth', sidebarWidth.toString());
   }, [sidebarWidth]);
+
+  // Persist split view state
+  useEffect(() => {
+    localStorage.setItem('splitView', String(isSplitView));
+  }, [isSplitView]);
+
+  useEffect(() => {
+    if (!currentDocument) return;
+    if (secondaryNodeId) {
+      const node = findNodeById(currentDocument.outline, secondaryNodeId);
+      if (node) {
+        localStorage.setItem('secondaryNodeText', node.text);
+      }
+    } else {
+      localStorage.removeItem('secondaryNodeText');
+    }
+  }, [secondaryNodeId, currentDocument]);
+
+  useEffect(() => {
+    localStorage.setItem('activePane', activePane);
+  }, [activePane]);
+
+  // Persist selectedNode text (ID changes on reload)
+  useEffect(() => {
+    if (!currentDocument) return;
+    if (selectedNodeId) {
+      const node = findNodeById(currentDocument.outline, selectedNodeId);
+      if (node) {
+        localStorage.setItem('selectedNodeText', node.text);
+      }
+    } else {
+      localStorage.removeItem('selectedNodeText');
+    }
+  }, [selectedNodeId, currentDocument]);
+
+  // Validate secondaryNodeId when document changes
+  useEffect(() => {
+    if (currentDocument && isSplitView && secondaryNodeId) {
+      // Check if secondaryNodeId exists in current document
+      const nodeExists = findNodeById(currentDocument.outline, secondaryNodeId);
+      if (!nodeExists && currentDocument.outline.length > 0) {
+        // Don't modify if we're in the middle of restoration (might cause race conditions)
+        // But honestly, if findNodeById fails, the ID IS gone. 
+        // With text-based restore, the ID we set SHOULD exist.
+        // Fallback to first node if somehow we have an invalid ID
+        setSecondaryNodeId(currentDocument.outline[0].id);
+      }
+    }
+  }, [currentDocument, isSplitView, secondaryNodeId]);
 
   // Sidebar Resize Handlers
   const startResizing = useCallback(() => {
@@ -145,6 +195,7 @@ function AppContent() {
   }, []);
 
   const isSessionRestored = useRef(false);
+  const isRestoreStarted = useRef(false);
 
   // Save state when folder or file changes (skip until session is restored)
   useEffect(() => {
@@ -212,9 +263,52 @@ function AppContent() {
       undoStack.current = [];
       redoStack.current = [];
 
-      // Select the first node by default if it exists
+      // Restore saved node IDs or fallback to first node
       if (outline.length > 0) {
-        setSelectedNodeId(outline[0].id);
+        // Only restore saved node selection during session restoration
+        if (isSessionRestore.current) {
+          const savedSelectedText = localStorage.getItem('selectedNodeText');
+          const savedSecondaryText = localStorage.getItem('secondaryNodeText');
+
+          // Helper to find node by text
+          const findNodeByText = (nodes: OutlineNode[], text: string): OutlineNode | null => {
+            for (const node of nodes) {
+              if (node.text === text) return node;
+              if (node.children) {
+                const found = findNodeByText(node.children, text);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+
+          // Restore primary selection
+          let restoredPrimary = false;
+          if (savedSelectedText) {
+            const node = findNodeByText(outline, savedSelectedText);
+            if (node) {
+              setSelectedNodeId(node.id);
+              restoredPrimary = true;
+            }
+          }
+          if (!restoredPrimary) {
+            setSelectedNodeId(outline[0].id);
+          }
+
+          // Restore secondary selection (split view)
+          if (savedSecondaryText) {
+            const node = findNodeByText(outline, savedSecondaryText);
+            if (node) {
+              setSecondaryNodeId(node.id);
+            }
+          }
+
+          // Clear the flag after first restoration
+          isSessionRestore.current = false;
+        } else {
+          // Normal file switch: always select first node
+          setSelectedNodeId(outline[0].id);
+        }
       } else {
         setSelectedNodeId(null);
       }
@@ -382,6 +476,9 @@ function AppContent() {
 
   // Restore previous session on mount
   useEffect(() => {
+    if (isRestoreStarted.current) return;
+    isRestoreStarted.current = true;
+
     const restoreSession = async () => {
       try {
         const savedFolderPath = localStorage.getItem('lastFolderPath');
