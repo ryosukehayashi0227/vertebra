@@ -1,0 +1,80 @@
+# Vertebra Technical Specifications
+
+## 1. Product Overview
+
+Vertebra is a distraction-free outline editor designed for long-form writing. It uses local Markdown files as its storage format, preserving plain text compatibility while offering a rich outline editing experience.
+
+### Core Philosophy
+- **Structure First**: Writing usually starts with an outline, then expands to content.
+- **Local First**: User data belongs to the user, stored in standard formats (Markdown).
+- **Fluidity**: Operations like reordering, indenting, and focusing should be seamless.
+
+## 2. Architecture
+
+### Technology Stack
+- **Framework**: Tauri v2
+- **Backend (Rust)**: Handles File System access, Window management, Native Menus.
+- **Frontend (React)**: Handles UI, State Management, Outline Logic.
+- **Build Tool**: Vite
+
+### Data Structure (Runtime)
+The application maintains a tree structure in memory (`OutlineNode[]`) which is parsed from and serialized back to Markdown.
+
+```typescript
+interface OutlineNode {
+    id: string;        // Unique internal ID
+    text: string;      // Node title (list item text)
+    content: string;   // Body content (nested text)
+    level: number;     // Indentation depth
+    children: OutlineNode[];
+    collapsed?: boolean;
+}
+```
+
+### File Format (Markdown)
+- **Hierarchy**: Represented by standard Markdown lists (`- Item`).
+- **Body Content**: Represented by text indented deeper than the list item.
+- **Escape Handling**: Lines starting with `- ` within body content are escaped as `\- ` and unescaped on load.
+
+## 3. Implemented Features
+
+### File Management
+- **Open Folder**: Read directory contents (recursively or flat listing).
+- **CRUD**: Create, Read, Update, Delete Markdown files.
+- **Native Menus**: File, Edit, View, Window menus fully integrated.
+
+### Outline Operations
+- **Parsing**: Advanced parser that distinguishes body content from child nodes based on indentation.
+- **Drag & Drop**:
+  - Custom mouse-event based implementation (bypassing WebKit drag issues).
+  - Supports `before`, `after`, and `inside` drop positions.
+  - Visual feedback with blue indicators.
+- **Keyboard Shortcuts**: Common text editing shortcuts tailored for outline mode.
+
+### UX Enhancements
+- **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.
+- **Welcome Workflow**: Guided steps for new users (Open Folder -> Select File -> Edit).
+
+## 4. Testing Strategy
+
+### Unit Testing (`src/lib/*.test.ts`)
+- **Focus**: Pure logic functions (parsing, serialization, tree manipulation).
+- **Tool**: Vitest.
+- **Coverage Goal**: >80% for core logic.
+
+### Component Testing (`src/components/*.test.tsx`)
+- **Focus**: UI state transitions, Render logic, Event handling.
+- **Tool**: Vitest + React Testing Library.
+- **Mocking**: Tauri APIs are mocked in `src/test/setup.ts`.
+
+### E2E Testing (`e2e/*.spec.ts`)
+- **Focus**: Critical user journeys, Integration reliability.
+- **Tool**: Playwright.
+- **Scope**: App launch, Navigation, Basic UI interactions.
+
+## 5. Future Roadmap
+
+- [ ] **Rich Text Editor**: Enhanced support for bold, italic, links within body content.
+- [ ] **Search**: Global search across the open folder.
+- [ ] **Export**: Export to PDF, DOCX, etc.
+- [ ] **Theming**: User-customizable themes.

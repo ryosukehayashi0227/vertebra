@@ -34,3 +34,14 @@ Thumbs.db
 # PostCSS (if generated)
 postcss.config.js
 tailwind.config.js
+
+# Local scripts
+gemini-pr.sh
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Tauri generated
+src-tauri/gen/

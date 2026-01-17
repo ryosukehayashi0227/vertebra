@@ -3,32 +3,37 @@
 A distraction-free outline editor dedicated to writing, built with Tauri for macOS and Windows.
 "Structure Your Thoughts" - providing a beautiful, fast, and fluid writing experience.
 
-## Project Goal
-Support the creation of long-form writing structures and idea organization, aiming for a highly versatile tool based on local Markdown file storage.
+## Features
+
+- **Local Markdown Management**: Open folders, create/read/update/delete Markdown files.
+- **Outline Editing**: 
+  - Parse Markdown lists as outline nodes.
+  - Drag & Drop reordering (supporting nested structures).
+  - Indent/Outdent operations.
+- **UI/UX**:
+  - Auto-switching sidebar views (Files / Outline).
+  - Native application menus (File, Edit, Window).
+  - Workflow-guided welcome screen.
 
 ## Tech Stack
 - **Core:** [Tauri v2](https://tauri.app/) (Rust)
-- **Frontend:** [React](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Bundler:** [Vite](https://vitejs.dev/)
-
-## Current Progress
-- [x] Initial project setup (Tauri + React + TS)
-- [x] Tailwind CSS v4 integration
-- [x] Basic UI (Sidebar + Editor) construction
-- [x] Markdown list syntax parsing and rendering
-- [ ] Local file system integration (Tauri API)
-- [ ] Outline editing and reordering functionality
-- [ ] File save functionality
+- **Frontend:** [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Data:** Plain Markdown files
+- **Testing:** Vitest (Unit/Component), Playwright (E2E)
+- **Styling:** Vanilla CSS + Tailwind CSS (App structure)
 
 ## Getting Started
 
-### Install Dependencies
+### Prerequisites
+- Node.js & npm
+- Rust & Cargo (for Tauri)
+
+### Installation
 ```bash
 npm install
 ```
 
-### Start Development Server
+### Development
 ```bash
 npm run tauri dev
 ```
@@ -36,6 +41,41 @@ npm run tauri dev
 ### Build
 ```bash
 npm run tauri build
+```
+
+## Testing
+
+Vertebra uses a comprehensive testing strategy combining Unit, Component, and E2E tests.
+
+### Unit & Component Tests (Vitest)
+Tests core logic (markdown parsing, tree operations) and UI components.
+
+```bash
+# Run all unit/component tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+### E2E Tests (Playwright)
+Tests the full application flow including Tauri integration.
+
+**First time setup:**
+```bash
+npx playwright install chromium
+```
+
+**Run tests:**
+```bash
+# Run E2E tests (headless)
+npm run test:e2e
+
+# Run with UI
+npm run test:e2e:ui
 ```
 
 ## Recommended IDE Setup
