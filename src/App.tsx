@@ -509,7 +509,8 @@ function AppContent() {
         console.log('[Session Restore] Saved file:', savedFilePath);
 
         if (savedFolderPath) {
-          // First load the folder
+          // First set the root folder path and load the folder
+          setFolderPath(savedFolderPath);
           await loadFolder(savedFolderPath);
 
           // Then open the file if it was saved
