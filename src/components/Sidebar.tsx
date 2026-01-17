@@ -49,6 +49,7 @@ function Sidebar({
     const [newFileName, setNewFileName] = useState("");
     const [dragOverInfo, setDragOverInfo] = useState<{ id: string; position: 'before' | 'after' | 'inside' } | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
+    const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
     const listRef = useRef<HTMLUListElement>(null);
 
     useEffect(() => {
@@ -68,6 +69,19 @@ function Sidebar({
             setViewMode("outline");
         }
     }, [selectedFilePath]);
+
+    // Toggle node collapse state
+    const toggleNodeCollapse = useCallback((nodeId: string) => {
+        setCollapsedNodes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(nodeId)) {
+                newSet.delete(nodeId);
+            } else {
+                newSet.add(nodeId);
+            }
+            return newSet;
+        });
+    }, []);
 
     // Find the target node from mouse coordinates
     const findTargetFromPoint = useCallback((x: number, y: number) => {
@@ -151,6 +165,7 @@ function Sidebar({
     const renderOutlineItem = (node: OutlineNode): React.ReactNode => {
         const isSelected = selectedNodeId === node.id;
         const hasChildren = node.children.length > 0;
+        const isCollapsed = collapsedNodes.has(node.id);
         const isTarget = dragOverInfo?.id === node.id;
         const isSelf = draggingId === node.id;
 
@@ -176,16 +191,19 @@ function Sidebar({
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                             e.stopPropagation();
-                            // Toggle collapse logic would go here
+                            if (hasChildren) {
+                                toggleNodeCollapse(node.id);
+                            }
                         }}
+                        style={{ visibility: hasChildren ? 'visible' : 'hidden' }}
                     >
-                        {hasChildren ? "▼" : "•"}
+                        {hasChildren ? (isCollapsed ? '▸' : '▾') : ''}
                     </button>
-                    <span className="sidebar-outline-text">{node.text || "無題"}</span>
+                    <span className="sidebar-outline-text">{node.text}</span>
                 </div>
-                {hasChildren && (
+                {hasChildren && !isCollapsed && (
                     <ul className="sidebar-outline-children">
-                        {node.children.map(child => renderOutlineItem(child))}
+                        {node.children.map(renderOutlineItem)}
                     </ul>
                 )}
             </li>

@@ -244,7 +244,7 @@
   padding: 2px 12px;
   border-radius: 0;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-primary);
   transition: background-color 0.1s ease;
   margin-bottom: 0;
@@ -323,21 +323,27 @@
 }
 
 .sidebar-collapse-btn {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  font-size: 0.5rem;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
 }
 
 .sidebar-outline-text {
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
