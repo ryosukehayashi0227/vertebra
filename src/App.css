@@ -984,7 +984,8 @@
   color: var(--color-text-secondary);
   opacity: 0.3;
   text-align: right;
-  border-right: 1px solid transparent;
+  border-right: 1px solid rgba(128, 128, 128, 0.4);
+  margin-right: 16px;
 }
 
 .line-number {
