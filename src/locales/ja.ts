@@ -79,11 +79,20 @@ export const ja: TranslationDictionary = {
     'stats.words': '単語',
     'stats.total': '合計',
 
-    // Settings
     'settings.title': '設定',
     'settings.theme': 'テーマ',
     'settings.themeLight': 'ライト',
     'settings.themeDark': 'ダーク',
     'settings.themeAuto': '自動',
-    'settings.language': '言語'
+    'settings.language': '言語',
+
+    // Common
+    'common.cancel': 'キャンセル',
+
+    // Export
+    'export.title': 'ドキュメントをエクスポート',
+    'export.docxDescription': 'Wordファイル(.docx)としてエクスポートします。Wordで開いてPDFに変換することもできます。',
+    'export.exportDocx': 'DOCXとしてエクスポート',
+    'export.exporting': 'エクスポート中...',
+    'export.success': 'エクスポートが完了しました!'
 };

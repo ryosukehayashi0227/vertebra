@@ -27,6 +27,10 @@ tauri-plugin-fs = "2.4.5"
 tauri-plugin-window-state = "2"
 tauri-plugin-os = "2.3.2"
 
+# Export functionality
+docx-rs = "0.4"
+pulldown-cmark = "0.11"
+
 # 開発ビルドのパフォーマンス改善設定
 [profile.dev]
 incremental = true # 増分コンパイルを有効化

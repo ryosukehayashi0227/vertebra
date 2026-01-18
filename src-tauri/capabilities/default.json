@@ -50,6 +50,7 @@
           "path": "**"
         }
       ]
-    }
+    },
+    "core:webview:allow-print"
   ]
 }

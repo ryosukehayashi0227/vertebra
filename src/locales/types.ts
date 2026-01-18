@@ -86,4 +86,14 @@ export interface TranslationDictionary {
     'settings.themeDark': string;
     'settings.themeAuto': string;
     'settings.language': string;
+
+    // Common
+    'common.cancel': string;
+
+    // Export
+    'export.title': string;
+    'export.docxDescription': string;
+    'export.exportDocx': string;
+    'export.exporting': string;
+    'export.success': string;
 }

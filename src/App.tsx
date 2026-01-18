@@ -27,6 +27,7 @@ import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import SettingsModal from "./components/SettingsModal";
+import ExportModal from "./components/ExportModal";
 import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
 import { useUndoRedo } from "./hooks/useUndoRedo";
@@ -74,6 +75,9 @@ function AppContent() {
 
   // Settings modal state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Export modal state
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
 
 
@@ -475,6 +479,12 @@ function AppContent() {
       unlisten.push(await listen("menu-redo", () => {
         handleRedo();
       }));
+
+      unlisten.push(await listen("menu-export", () => {
+        if (currentDocument) {
+          setIsExportOpen(true);
+        }
+      }));
     };
 
     setupMenuListeners();
@@ -657,6 +667,12 @@ function AppContent() {
         )}
       </main>
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        content={currentDocument ? outlineToMarkdown(currentDocument.outline) : ''}
+        title={currentDocument?.name.replace(/\.md$/, '') || 'document'}
+      />
     </div>
   );
 }

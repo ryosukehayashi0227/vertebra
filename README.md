@@ -18,6 +18,7 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
 - **Writing Tools**:
   - **Line Numbers**: Visual gutter displaying logical line numbers with clear separation from content.
   - **Writing Statistics**: Real-time character and word counts at both node-level (sidebar) and document-level (status bar).
+  - **Export**: Export documents as DOCX files (Cmd+Shift+E). Convert to PDF using Word/Pages.
 - **UI/UX**:
   - **Internationalization (i18n)**: English and Japanese support (auto-detect OS language).
   - **Granular Font Size**: Adjustable text size (Zoom In/Out) persisting across sessions.

@@ -66,6 +66,10 @@ interface OutlineNode {
   - Node-level character counts displayed in sidebar.
   - Document-level character and word counts in bottom status bar.
   - Real-time updates as user types.
+- **Export**:
+  - DOCX export functionality with keyboard shortcut (Cmd+Shift+E / Ctrl+Shift+E).
+  - Node titles formatted as large headings, body content as plain paragraphs.
+  - Users can convert DOCX to PDF using Word/Pages.
 
 ### UX Enhancements
 - **View Switching**: Sidebar automatically toggles between File List and Outline View based on context.
@@ -114,4 +118,3 @@ interface OutlineNode {
 - [ ] **Focus Mode**: Zoom into a specific node and its subtree.
 - [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
 - [ ] **Global Search**: Search across all files in the open folder.
-- [ ] **Export**: Export to PDF, DOCX, etc.
