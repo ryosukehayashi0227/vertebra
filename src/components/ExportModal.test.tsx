@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ExportModal from './ExportModal';
 import { LanguageProvider } from '../contexts/LanguageContext';
 
@@ -36,6 +36,12 @@ describe('ExportModal', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        // Default behavior: invoke resolves successfully
+        mockInvoke.mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     describe('Modal Visibility', () => {
@@ -96,7 +102,6 @@ describe('ExportModal', () => {
 
         it('should call save dialog with correct parameters', async () => {
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockResolvedValue(undefined);
 
             renderModal({ title: 'My Document' });
 
@@ -115,7 +120,6 @@ describe('ExportModal', () => {
 
         it('should invoke export_document with correct options', async () => {
             mockSave.mockResolvedValue('/path/to/output.docx');
-            mockInvoke.mockResolvedValue(undefined);
 
             renderModal({
                 content: '- Node 1\n  Content',
@@ -148,12 +152,13 @@ describe('ExportModal', () => {
                 expect(exportButton).not.toBeDisabled();
             });
 
-            expect(mockInvoke).not.toHaveBeenCalled();
+            // Ensure export_document was NOT called
+            // We use expect.anything() for args to be safe, but check first argument
+            expect(mockInvoke).not.toHaveBeenCalledWith('export_document', expect.anything());
         });
 
         it('should show success message after successful export', async () => {
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockResolvedValue(undefined);
 
             renderModal();
 
@@ -165,27 +170,34 @@ describe('ExportModal', () => {
         });
 
         it('should auto-close modal after successful export', async () => {
-            vi.useFakeTimers();
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockResolvedValue(undefined);
+            const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+
             const onClose = vi.fn();
 
             renderModal({ onClose });
 
             fireEvent.click(screen.getByText('Export as DOCX'));
 
+            // Wait for success message
             await waitFor(() => {
                 expect(screen.getByText(/Export completed successfully/)).toBeInTheDocument();
             });
 
-            // Fast-forward 1500ms
-            await vi.advanceTimersByTimeAsync(1500);
+            // Check if setTimeout was called
+            expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1500);
 
-            await waitFor(() => {
-                expect(onClose).toHaveBeenCalledTimes(1);
+            // Execute the timeout callback
+            const timeoutCallback = setTimeoutSpy.mock.calls.find(call => call[1] === 1500)?.[0] as Function;
+            expect(timeoutCallback).toBeDefined();
+
+            act(() => {
+                timeoutCallback();
             });
 
-            vi.useRealTimers();
+            expect(onClose).toHaveBeenCalledTimes(1);
+
+            setTimeoutSpy.mockRestore();
         });
     });
 
@@ -193,7 +205,15 @@ describe('ExportModal', () => {
         it('should display error message when export fails', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockRejectedValue(new Error('Export failed'));
+
+            // Mock implementation to reject ONLY export_document,
+            // but resolve others (like update_menu_language from LanguageProvider)
+            mockInvoke.mockImplementation((cmd) => {
+                if (cmd === 'export_document') {
+                    return Promise.reject(new Error('Export failed'));
+                }
+                return Promise.resolve();
+            });
 
             renderModal();
             fireEvent.click(screen.getByText('Export as DOCX'));
@@ -208,7 +228,13 @@ describe('ExportModal', () => {
         it('should re-enable export button after error', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockRejectedValue(new Error('Export failed'));
+
+            mockInvoke.mockImplementation((cmd) => {
+                if (cmd === 'export_document') {
+                    return Promise.reject(new Error('Export failed'));
+                }
+                return Promise.resolve();
+            });
 
             renderModal();
             const exportButton = screen.getByText('Export as DOCX');
@@ -227,7 +253,6 @@ describe('ExportModal', () => {
     describe('State Management', () => {
         it('should clear error and success states when closing', async () => {
             mockSave.mockResolvedValue('/path/to/file.docx');
-            mockInvoke.mockResolvedValue(undefined);
             const onClose = vi.fn();
 
             renderModal({ onClose });
