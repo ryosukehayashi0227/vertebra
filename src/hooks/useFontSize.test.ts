@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useFontSize } from './useFontSize';
 
 describe('useFontSize', () => {
@@ -9,9 +9,9 @@ describe('useFontSize', () => {
     });
 
     describe('initialization', () => {
-        it('should initialize with default font size (14px)', () => {
+        it('should initialize with default font size (16px)', () => {
             const { result } = renderHook(() => useFontSize());
-            expect(result.current.fontSize).toBe(14);
+            expect(result.current.fontSize).toBe(16);
         });
 
         it('should restore font size from localStorage', () => {
@@ -23,12 +23,21 @@ describe('useFontSize', () => {
         it('should use default if localStorage has invalid value', () => {
             localStorage.setItem('userFontSize', 'invalid');
             const { result } = renderHook(() => useFontSize());
-            expect(result.current.fontSize).toBe(14);
+            expect(result.current.fontSize).toBe(16);
         });
 
         it('should apply initial font size to CSS variable', () => {
             const { result } = renderHook(() => useFontSize());
-            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('14px');
+            expect(result.current.fontSize).toBe(16); // Verify the hook returns correct value
+            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('16px');
+        });
+
+        it('should set line-height CSS variable based on font size', () => {
+            const { result } = renderHook(() => useFontSize());
+            const expectedLineHeight = Math.round(16 * 1.6); // 26px
+            expect(result.current.fontSize).toBe(16); // Verify font size is correct
+            expect(document.documentElement.style.getPropertyValue('--user-line-height'))
+                .toBe(`${expectedLineHeight}px`);
         });
     });
 
@@ -40,7 +49,7 @@ describe('useFontSize', () => {
                 result.current.zoomIn();
             });
 
-            expect(result.current.fontSize).toBe(15);
+            expect(result.current.fontSize).toBe(17);
         });
 
         it('should not exceed maximum font size (24px)', () => {
@@ -61,7 +70,7 @@ describe('useFontSize', () => {
                 result.current.zoomIn();
             });
 
-            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('15px');
+            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('17px');
         });
 
         it('should persist to localStorage after zoom in', () => {
@@ -71,7 +80,7 @@ describe('useFontSize', () => {
                 result.current.zoomIn();
             });
 
-            expect(localStorage.getItem('userFontSize')).toBe('15');
+            expect(localStorage.getItem('userFontSize')).toBe('17');
         });
     });
 
@@ -83,7 +92,7 @@ describe('useFontSize', () => {
                 result.current.zoomOut();
             });
 
-            expect(result.current.fontSize).toBe(13);
+            expect(result.current.fontSize).toBe(15);
         });
 
         it('should not go below minimum font size (10px)', () => {
@@ -104,7 +113,7 @@ describe('useFontSize', () => {
                 result.current.zoomOut();
             });
 
-            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('13px');
+            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('15px');
         });
 
         it('should persist to localStorage after zoom out', () => {
@@ -114,12 +123,12 @@ describe('useFontSize', () => {
                 result.current.zoomOut();
             });
 
-            expect(localStorage.getItem('userFontSize')).toBe('13');
+            expect(localStorage.getItem('userFontSize')).toBe('15');
         });
     });
 
     describe('resetZoom', () => {
-        it('should reset font size to default (14px)', () => {
+        it('should reset font size to default (16px)', () => {
             localStorage.setItem('userFontSize', '20');
             const { result } = renderHook(() => useFontSize());
 
@@ -127,7 +136,7 @@ describe('useFontSize', () => {
                 result.current.resetZoom();
             });
 
-            expect(result.current.fontSize).toBe(14);
+            expect(result.current.fontSize).toBe(16);
         });
 
         it('should update CSS variable after reset', () => {
@@ -138,7 +147,7 @@ describe('useFontSize', () => {
                 result.current.resetZoom();
             });
 
-            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('14px');
+            expect(document.documentElement.style.getPropertyValue('--user-font-size')).toBe('16px');
         });
 
         it('should persist to localStorage after reset', () => {
@@ -149,7 +158,7 @@ describe('useFontSize', () => {
                 result.current.resetZoom();
             });
 
-            expect(localStorage.getItem('userFontSize')).toBe('14');
+            expect(localStorage.getItem('userFontSize')).toBe('16');
         });
     });
 
@@ -163,7 +172,7 @@ describe('useFontSize', () => {
                 result.current.zoomIn();
             });
 
-            expect(result.current.fontSize).toBe(17);
+            expect(result.current.fontSize).toBe(19);
         });
 
         it('should handle multiple zoom out operations', () => {
@@ -175,7 +184,7 @@ describe('useFontSize', () => {
                 result.current.zoomOut();
             });
 
-            expect(result.current.fontSize).toBe(11);
+            expect(result.current.fontSize).toBe(13);
         });
 
         it('should handle zoom in and out combinations', () => {
@@ -187,7 +196,7 @@ describe('useFontSize', () => {
                 result.current.zoomOut();
             });
 
-            expect(result.current.fontSize).toBe(15);
+            expect(result.current.fontSize).toBe(17);
         });
     });
 });

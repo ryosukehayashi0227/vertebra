@@ -1,6 +1,23 @@
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 
+// Mock ResizeObserver
+(globalThis as any).ResizeObserver = class ResizeObserver {
+    observe() { }
+    unobserve() { }
+    disconnect() { }
+};
+
+// Mock MutationObserver if not already available
+if (typeof (globalThis as any).MutationObserver === 'undefined') {
+    (globalThis as any).MutationObserver = class MutationObserver {
+        constructor(_callback: MutationCallback) { }
+        observe() { }
+        disconnect() { }
+        takeRecords() { return []; }
+    };
+}
+
 // Mock Tauri APIs for testing
 const mockInvoke = vi.fn();
 const mockOpen = vi.fn();
