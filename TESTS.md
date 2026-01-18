@@ -348,9 +348,9 @@
 
 ---
 
-## E2E Tests (23 tests)
+## E2E Tests (37 tests)
 
-### basic.spec.ts (9 tests)
+### e2e/basic.spec.ts (9 tests)
 | Test Name | Description |
 |-----------|-------------|
 | **Welcome Screen** | |
@@ -370,7 +370,7 @@
 
 ---
 
-### folder-navigation.spec.ts (5 tests)
+### e2e/folder-navigation.spec.ts (5 tests)
 | Test Name | Description |
 |-----------|-------------|
 | Navigate into subfolder | Navigate into a subfolder |
@@ -381,7 +381,7 @@
 
 ---
 
-### functional.spec.ts (2 tests)
+### e2e/functional.spec.ts (2 tests)
 | Test Name | Description |
 |-----------|-------------|
 | File Management Flow | Complete file management flow |
@@ -389,7 +389,7 @@
 
 ---
 
-### persistence.spec.ts (7 tests)
+### e2e/persistence.spec.ts (7 tests)
 | Test Name | Description |
 |-----------|-------------|
 | Session restoration - folder path and selected file | Restores folder and file |
@@ -399,6 +399,48 @@
 | Theme persistence | Theme setting is persisted |
 | Language persistence | Language setting is persisted |
 | No session - starts fresh | Starts fresh without session |
+
+---
+
+### e2e/export.spec.ts (4 tests)
+| Test Name | Description |
+|-----------|-------------|
+| should export document to DOCX from menu | Export flow |
+| should handle export cancellation | Export cancellation |
+| should show error message on export failure | Export error handling |
+| should not show export option when no document is open | Export guard |
+
+---
+
+### e2e/undo-redo.spec.ts (5 tests)
+| Test Name | Description |
+|-----------|-------------|
+| should undo and redo node additions | Undo/redo additions |
+| should undo and redo node deletions | Undo/redo deletions |
+| should undo and redo text edits | Undo/redo edits |
+| should handle multiple undo operations in sequence | Multiple undo/redo |
+| should clear redo stack after new operation | Redo stack clearing |
+
+---
+
+### e2e/split-view.spec.ts (6 tests)
+| Test Name | Description |
+|-----------|-------------|
+| should enable split view and edit in both panes | Split view enable |
+| should sync changes between panes when editing same node | Change synchronization |
+| should close split view and return to single pane | Split view disable |
+| should maintain split view state across different nodes | State maintenance |
+| should allow independent scrolling in split panes | Independent scrolling |
+| should handle split view with active pane switching | Active pane switching |
+
+---
+
+## Test Summary
+
+- **Unit Tests**: 251 tests
+- **E2E Tests**: 37 tests (15 new tests added)
+- **Total**: 288 tests
+- **Success Rate**: 100%
 
 ---
 
@@ -420,3 +462,4 @@ npm run test:e2e
 # Run E2E tests (UI mode)
 npm run test:e2e:ui
 ```
+
