@@ -27,7 +27,7 @@ describe('App Session Restoration', () => {
         vi.clearAllMocks();
         localStorage.clear();
         // Reset localStorage.getItem implementation in case it was modified
-        vi.mocked(localStorage.getItem).mockImplementation((key) => {
+        vi.mocked(localStorage.getItem).mockImplementation(() => {
             // Access the underlying store from the setup file if possible,
             // but since we can't easily access the closure 'store',
             // we should rely on setItem/getItem behavior if we didn't mock implementation.
@@ -126,7 +126,7 @@ describe('App Menu Integration', () => {
         vi.clearAllMocks();
         localStorage.clear();
         // Restore default behavior of localStorage.getItem which returns null for cleared storage
-        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
+        vi.mocked(localStorage.getItem).mockImplementation(() => null);
     });
 
     it('should render without crashing', async () => {
@@ -152,7 +152,7 @@ describe('App Export Modal', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
-        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
+        vi.mocked(localStorage.getItem).mockImplementation(() => null);
     });
 
     it('should not show export modal initially', async () => {
@@ -166,7 +166,7 @@ describe('App State Management', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
-        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
+        vi.mocked(localStorage.getItem).mockImplementation(() => null);
     });
 
     it('should initialize with empty state', async () => {

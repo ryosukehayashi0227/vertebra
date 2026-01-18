@@ -1,6 +1,6 @@
 # Vertebra Test Documentation
 
-## Unit Tests (251 tests)
+## Unit Tests (263 tests)
 
 ### App.test.tsx (9 tests)
 | Test Name | Description |
@@ -277,17 +277,40 @@
 
 ---
 
-### lib/fileSystem.test.ts (10 tests)
+### lib/fileSystem.test.ts (22 tests)
 | Test Name | Description |
 |-----------|-------------|
-| openFolderDialog calls open | Dialog invocation |
-| readDirectory calls invoke | Directory reading |
-| readFile calls invoke | File reading |
-| writeFile calls invoke | File writing |
-| createFile calls invoke | File creation |
-| deleteFile calls invoke | File deletion |
-| renameFile calls invoke | File renaming |
-| askConfirm calls ask | Confirmation dialog |
+| **openFolderDialog** | |
+| should call open with directory options | Opens folder dialog with correct parameters |
+| should return null when dialog is cancelled | Handles dialog cancellation |
+| **readDirectory** | |
+| should call invoke with correct command and path | Reads directory contents |
+| should handle empty directory | Returns empty array for empty directory |
+| should handle directory read errors | Throws error on permission denied |
+| **readFile** | |
+| should call invoke with correct command and path | Reads file content |
+| should handle empty file | Returns empty string for empty file |
+| should handle file not found error | Throws error when file doesn't exist |
+| should handle file with special characters in path | Handles paths with spaces and special chars |
+| **writeFile** | |
+| should call invoke with correct command, path and content | Writes content to file |
+| should handle empty content | Writes empty string to file |
+| should handle write errors | Throws error on disk full |
+| **createFile** | |
+| should call invoke with correct command and path | Creates new file |
+| should handle file already exists error | Throws error when file exists |
+| **deleteFile** | |
+| should call invoke with correct command and path | Deletes file |
+| should handle delete errors | Throws error when file is in use |
+| **renameFile** | |
+| should call invoke with correct command and paths | Renames file |
+| should handle rename to existing file error | Throws error when target exists |
+| **askConfirm** | |
+| should call ask with message and options | Shows confirmation dialog |
+| should return false when user cancels | Returns false on cancel |
+| **Concurrent Operations** | |
+| should handle multiple readFile calls concurrently | Handles parallel file reads |
+| should handle concurrent read and write operations | Handles mixed concurrent operations |
 
 ### outline.test.ts (47 tests)
 | Category | Test Name |
