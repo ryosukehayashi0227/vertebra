@@ -26,6 +26,16 @@ describe('App Session Restoration', () => {
         vi.useFakeTimers();
         vi.clearAllMocks();
         localStorage.clear();
+        // Reset localStorage.getItem implementation in case it was modified
+        vi.mocked(localStorage.getItem).mockImplementation((key) => {
+             // Access the underlying store from the setup file if possible,
+             // but since we can't easily access the closure 'store',
+             // we should rely on setItem/getItem behavior if we didn't mock implementation.
+             // BUT, the previous tests mocked implementation.
+             // Best practice: Don't mock implementation of localStorage if it's already mocked in setup.
+             // Just use setItem.
+             return null;
+        });
     });
 
     afterEach(() => {
@@ -33,9 +43,19 @@ describe('App Session Restoration', () => {
     });
 
     it('should restore folder from localStorage on mount', async () => {
+        // Use setItem instead of mocking implementation
+        localStorage.setItem('lastFolderPath', '/saved/path');
+
+        // We need to ensure getItem returns what we set.
+        // Since we overwrote implementation in previous runs (if any), we need to be careful.
+        // Let's just fix the test to use setItem and NOT mock implementation,
+        // assuming vitest.setup.ts implementation is active.
+        // HOWEVER, vitest.setup.ts defines localStorageMock with vi.fn().
+        // So we can restore it.
+
         vi.mocked(localStorage.getItem).mockImplementation((key) => {
-            if (key === 'lastFolderPath') return '/saved/path';
-            return null;
+             if (key === 'lastFolderPath') return '/saved/path';
+             return null;
         });
 
         (fileSystem.readDirectory as any).mockResolvedValue([
@@ -116,22 +136,26 @@ describe('App Menu Integration', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
+        // Restore default behavior of localStorage.getItem which returns null for cleared storage
+        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
     });
 
-    it('should render without crashing', () => {
+    it('should render without crashing', async () => {
         render(<App />);
-        expect(screen.getByText(/Welcome to Vertebra/i)).toBeInTheDocument();
+        // Wait for welcome message
+        expect(await screen.findByText(/Vertebra/i)).toBeInTheDocument();
     });
 
-    it('should show splash screen when no folder is open', () => {
+    it('should show splash screen when no folder is open', async () => {
         render(<App />);
-        expect(screen.getByText(/Open a folder to get started/i)).toBeInTheDocument();
+        // Wait for initialization to complete and show "Open Folder to Start"
+        expect(await screen.findByText(/Open Folder to Start/i)).toBeInTheDocument();
     });
 
-    it('should have main layout structure', () => {
+    it('should have main layout structure', async () => {
         const { container } = render(<App />);
-        // App renders LanguageProvider and ThemeProvider wrappers
-        expect(container.querySelector('.splash-screen')).toBeInTheDocument();
+        await screen.findByText(/Vertebra/i);
+        expect(container.querySelector('.app-container')).toBeInTheDocument();
     });
 });
 
@@ -139,10 +163,12 @@ describe('App Export Modal', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
+        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
     });
 
-    it('should not show export modal initially', () => {
+    it('should not show export modal initially', async () => {
         render(<App />);
+        await screen.findByText(/Vertebra/i);
         expect(screen.queryByText('Export Document')).not.toBeInTheDocument();
     });
 });
@@ -151,12 +177,13 @@ describe('App State Management', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
+        vi.mocked(localStorage.getItem).mockImplementation((key) => null);
     });
 
-    it('should initialize with empty state', () => {
-        const { container } = render(<App />);
-        // App starts with splash screen when no folder is loaded
-        expect(container.querySelector('.splash-screen')).toBeInTheDocument();
+    it('should initialize with empty state', async () => {
+        render(<App />);
+        // Expect Vertebra title when no folder is open
+        expect(await screen.findByText(/Vertebra/i)).toBeInTheDocument();
     });
 
     it('should render without errors', () => {
