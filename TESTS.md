@@ -1,6 +1,6 @@
 # Vertebra Test Documentation
 
-## Unit Tests (215 tests)
+## Unit Tests (251 tests)
 
 ### App.test.tsx (9 tests)
 | Test Name | Description |
@@ -185,6 +185,63 @@
 | should debounce history pushes | Debounce logic |
 | should reset debounce timer on rapid changes | Timer reset |
 | should allow multiple history entries with sufficient delays | Multi-entry logic |
+
+---
+
+### hooks/useFontSize.test.ts (18 tests)
+| Test Name | Description |
+|-----------|-------------|
+| **Initialization** | |
+| should initialize with default font size (14px) | Default initialization |
+| should restore font size from localStorage | Persistence restoration |
+| should use default if localStorage has invalid value | Fallback logic |
+| should apply initial font size to CSS variable | CSS variable application |
+| **Zoom In** | |
+| should increase font size by 1 | Increment logic |
+| should not exceed maximum font size (24px) | Max boundary |
+| should update CSS variable after zoom in | CSS update |
+| should persist to localStorage after zoom in | Persistence |
+| **Zoom Out** | |
+| should decrease font size by 1 | Decrement logic |
+| should not go below minimum font size (10px) | Min boundary |
+| should update CSS variable after zoom out | CSS update |
+| should persist to localStorage after zoom out | Persistence |
+| **Reset** | |
+| should reset font size to default (14px) | Reset logic |
+| should update CSS variable after reset | CSS update |
+| should persist to localStorage after reset | Persistence |
+| **Edge Cases** | |
+| should handle multiple zoom operations | Multiple operations |
+| should handle zoom combinations | Combined operations |
+
+---
+
+### hooks/useSidebarResize.test.ts (18 tests)
+| Test Name | Description |
+|-----------|-------------|
+| **Initialization** | |
+| should initialize with default width (240px) | Default initialization |
+| should restore width from localStorage | Persistence restoration |
+| should use default if localStorage has invalid value | Fallback logic |
+| should initialize with isResizing as false | State initialization |
+| should persist initial width to localStorage | Initial persistence |
+| **Start Resizing** | |
+| should set isResizing to true | State change |
+| should add event listeners when resizing starts | Event listener setup |
+| **Resize Behavior** | |
+| should update width on mousemove when resizing | Width update |
+| should enforce minimum width (150px) | Min boundary |
+| should enforce maximum width (600px) | Max boundary |
+| should not update width when not resizing | Guard clause |
+| should persist width changes to localStorage | Persistence |
+| **Stop Resizing** | |
+| should set isResizing to false on mouseup | State change |
+| should remove event listeners when resizing stops | Event listener cleanup |
+| **Cleanup** | |
+| should remove event listeners on unmount | Unmount cleanup |
+| **Edge Cases** | |
+| should handle rapid resize operations | Multiple operations |
+| should handle resize at exact boundaries | Boundary conditions |
 
 ---
 
