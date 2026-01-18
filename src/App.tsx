@@ -23,11 +23,13 @@ import {
   removeNode,
   calculateTotalStats,
 } from "./lib/outline";
+import { findNodeByContent } from "./lib/search";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import SettingsModal from "./components/SettingsModal";
 import ExportModal from "./components/ExportModal";
+import SearchModal from "./components/SearchModal";
 import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
 import { useUndoRedo } from "./hooks/useUndoRedo";
@@ -84,6 +86,7 @@ function AppContent() {
 
   // Export modal state
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
 
 
@@ -132,8 +135,11 @@ function AppContent() {
   }, [currentPath, folderPath, loadFolder]);
 
   // Load file content
-  const handleSelectFile = useCallback(async (filePath: string) => {
+  const handleSelectFile = useCallback(async (filePath: string, targetContent?: string) => {
     console.log('[handleSelectFile] Opening file:', filePath);
+    if (targetContent) {
+      console.log('[handleSelectFile] Jumping to content:', targetContent);
+    }
     setIsLoading(true);
     try {
       const content = await readFile(filePath);
@@ -153,54 +159,64 @@ function AppContent() {
       // Clear undo/redo history on file switch
       clearHistory();
 
-      // Restore saved node IDs or fallback to first node
-      if (outline.length > 0) {
-        // Only restore saved node selection during session restoration
-        if (isSessionRestore.current) {
-          const savedSelectedText = localStorage.getItem('selectedNodeText');
-          const savedSecondaryText = localStorage.getItem('secondaryNodeText');
+      // Find node by content if targetContent is provided
+      let foundNodeId: string | null = null;
+      if (targetContent) {
+        foundNodeId = findNodeByContent(outline, targetContent);
+      }
 
-          // Helper to find node by text
-          const findNodeByText = (nodes: OutlineNode[], text: string): OutlineNode | null => {
-            for (const node of nodes) {
-              if (node.text === text) return node;
-              if (node.children) {
-                const found = findNodeByText(node.children, text);
-                if (found) return found;
+      if (foundNodeId) {
+        setSelectedNodeId(foundNodeId);
+      } else {
+        // Restore saved node IDs or fallback to first node
+        if (outline.length > 0) {
+          // Only restore saved node selection during session restoration or if no target content
+          if (isSessionRestore.current && !targetContent) {
+            const savedSelectedText = localStorage.getItem('selectedNodeText');
+            const savedSecondaryText = localStorage.getItem('secondaryNodeText');
+
+            // Helper to find node by text
+            const findNodeByText = (nodes: OutlineNode[], text: string): OutlineNode | null => {
+              for (const node of nodes) {
+                if (node.text === text) return node;
+                if (node.children) {
+                  const found = findNodeByText(node.children, text);
+                  if (found) return found;
+                }
+              }
+              return null;
+            };
+
+            // Restore primary selection
+            let restoredPrimary = false;
+            if (savedSelectedText) {
+              const node = findNodeByText(outline, savedSelectedText);
+              if (node) {
+                setSelectedNodeId(node.id);
+                restoredPrimary = true;
               }
             }
-            return null;
-          };
-
-          // Restore primary selection
-          let restoredPrimary = false;
-          if (savedSelectedText) {
-            const node = findNodeByText(outline, savedSelectedText);
-            if (node) {
-              setSelectedNodeId(node.id);
-              restoredPrimary = true;
+            if (!restoredPrimary) {
+              setSelectedNodeId(outline[0].id);
             }
-          }
-          if (!restoredPrimary) {
+
+            // Restore secondary selection (split view)
+            if (savedSecondaryText) {
+              const node = findNodeByText(outline, savedSecondaryText);
+              if (node) {
+                setSecondaryNodeId(node.id);
+              }
+            }
+
+            // Clear the flag after first restoration
+            isSessionRestore.current = false;
+          } else if (!targetContent) {
+            // Normal file switch: always select first node
             setSelectedNodeId(outline[0].id);
           }
-
-          // Restore secondary selection (split view)
-          if (savedSecondaryText) {
-            const node = findNodeByText(outline, savedSecondaryText);
-            if (node) {
-              setSecondaryNodeId(node.id);
-            }
-          }
-
-          // Clear the flag after first restoration
-          isSessionRestore.current = false;
         } else {
-          // Normal file switch: always select first node
-          setSelectedNodeId(outline[0].id);
+          setSelectedNodeId(null);
         }
-      } else {
-        setSelectedNodeId(null);
       }
     } catch (error) {
       console.error("Failed to load file:", error);
@@ -377,6 +393,12 @@ function AppContent() {
       if ((e.metaKey || e.ctrlKey) && e.key === "y") {
         e.preventDefault();
         handleRedo();
+      }
+
+      // Global Search
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setIsSearchOpen(true);
       }
     };
 
@@ -646,6 +668,15 @@ function AppContent() {
         onClose={() => setIsExportOpen(false)}
         content={currentDocument ? outlineToMarkdown(currentDocument.outline) : ''}
         title={currentDocument?.name.replace(/\.md$/, '') || 'document'}
+      />
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        folderPath={folderPath}
+        onSelectResult={async (filePath, lineContent) => {
+          setIsSearchOpen(false);
+          await handleSelectFile(filePath, lineContent);
+        }}
       />
     </div>
   );

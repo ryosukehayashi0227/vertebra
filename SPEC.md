@@ -53,7 +53,9 @@ interface OutlineNode {
   - [x] Node Deletion: Recursive deletion of nodes and children with native asynchronous confirmation.
   - [x] Undo/Redo: Global history management for all operations (Delete, Move, Indent, Outdent, Text Editing) with 500ms debounce for text changes.
   - [x] Keyboard Shortcuts: Common text editing and history shortcuts tailored for outline mode.
+  - [x] **Focus Mode**: Focus on a specific node and its children (`Cmd+Shift+X` to toggle).
 - **Search & Filter**:
+  - **Global Search**: Search text across all files in the opened folder (`Cmd+Shift+F`). Results allow jumping to the specific file and node.
   - Recursive filtering of nodes based on title and body content.
   - Automatic expansion of ancestor nodes to preserve context.
   - **Highlighting**: Visual highlighting of matching nodes.
@@ -115,6 +117,6 @@ interface OutlineNode {
 
 ## 5. Future Roadmap
 
-- [ ] **Focus Mode**: Zoom into a specific node and its subtree.
+- [x] **Focus Mode**: Zoom into a specific node and its subtree.
 - [ ] **Rich Text Editing**: Enhanced formatting (Bold, Italic, Links via Tiptap).
-- [ ] **Global Search**: Search across all files in the open folder.
+- [x] **Global Search**: Search across all files in the open folder.

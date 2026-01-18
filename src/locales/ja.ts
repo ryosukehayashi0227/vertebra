@@ -94,5 +94,10 @@ export const ja: TranslationDictionary = {
     'export.docxDescription': 'Wordファイル(.docx)としてエクスポートします。Wordで開いてPDFに変換することもできます。',
     'export.exportDocx': 'DOCXとしてエクスポート',
     'export.exporting': 'エクスポート中...',
-    'export.success': 'エクスポートが完了しました!'
+    'export.success': 'エクスポートが完了しました!',
+
+    // Search
+    'search.placeholder': 'すべてのファイルを検索...',
+    'search.noResults': '見つかりませんでした',
+    'search.hint': '検索語句を入力してください...',
 };

@@ -131,6 +131,13 @@
 | switches to outline view when file selected | View mode logic |
 | calls onMoveNode when dragged and dropped | D&D interaction |
 | shows empty hint when outline is empty | Empty state |
+| **SearchModal** | |
+| renders search input | Input rendering |
+| calls backend search | Search functionality |
+| handles selection with jump | Jump to node logic |
+| **Search Logic** | |
+| normalizes escaped characters | Escape handling |
+| finds node by content | Node search |
 ---
 
 ### SettingsModal.test.tsx (9 tests)

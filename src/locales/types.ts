@@ -96,4 +96,9 @@ export interface TranslationDictionary {
     'export.exportDocx': string;
     'export.exporting': string;
     'export.success': string;
+
+    // Search
+    'search.placeholder': string;
+    'search.noResults': string;
+    'search.hint': string;
 }
