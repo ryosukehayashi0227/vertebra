@@ -149,6 +149,58 @@ fn export_to_docx(options: &ExportOptions) -> Result<(), String> {
     Ok(())
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SearchResult {
+    pub file_path: String,
+    pub file_name: String,
+    pub line_number: usize,
+    pub line_content: String,
+}
+
+/// Search for text in all markdown files in a directory
+#[tauri::command]
+fn search_files(dir_path: String, query: String) -> Result<Vec<SearchResult>, String> {
+    use walkdir::WalkDir;
+
+    let mut results = Vec::new();
+    // Case-insensitive search
+    let query_lower = query.to_lowercase();
+    if query_lower.is_empty() {
+        return Ok(results);
+    }
+
+    for entry in WalkDir::new(dir_path).into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+
+        // Only check .md files
+        if path.extension().map_or(false, |ext| ext == "md") {
+            if let Ok(content) = fs::read_to_string(path) {
+                for (i, line) in content.lines().enumerate() {
+                    if line.to_lowercase().contains(&query_lower) {
+                        results.push(SearchResult {
+                            file_path: path.to_string_lossy().to_string(),
+                            file_name: path
+                                .file_name()
+                                .unwrap_or_default()
+                                .to_string_lossy()
+                                .to_string(),
+                            line_number: i + 1,
+                            line_content: line.trim().to_string(),
+                        });
+
+                        // Limit results to 100 to prevent performance issues
+                        if results.len() >= 100 {
+                            return Ok(results);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(results)
+}
+
 #[tauri::command]
 fn update_menu_language(app: tauri::AppHandle, lang: String) -> Result<(), String> {
     let menu = build_menu(&app, &lang).map_err(|e| e.to_string())?;
@@ -461,6 +513,7 @@ pub fn run() {
             rename_file,
             update_menu_language,
             export_document,
+            search_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

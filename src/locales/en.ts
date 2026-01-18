@@ -94,5 +94,10 @@ export const en: TranslationDictionary = {
     'export.docxDescription': 'Export your document as a Word file (.docx). You can then open it in Word or convert to PDF.',
     'export.exportDocx': 'Export as DOCX',
     'export.exporting': 'Exporting...',
-    'export.success': 'Export completed successfully!'
+    'export.success': 'Export completed successfully!',
+
+    // Search
+    'search.placeholder': 'Search in all files...',
+    'search.noResults': 'No results found',
+    'search.hint': 'Type to search...',
 };
