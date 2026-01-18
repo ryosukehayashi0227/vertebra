@@ -79,11 +79,20 @@ export const en: TranslationDictionary = {
     'stats.words': 'words',
     'stats.total': 'Total',
 
-    // Settings
     'settings.title': 'Settings',
     'settings.theme': 'Theme',
     'settings.themeLight': 'Light',
     'settings.themeDark': 'Dark',
     'settings.themeAuto': 'Auto',
-    'settings.language': 'Language'
+    'settings.language': 'Language',
+
+    // Common
+    'common.cancel': 'Cancel',
+
+    // Export
+    'export.title': 'Export Document',
+    'export.docxDescription': 'Export your document as a Word file (.docx). You can then open it in Word or convert to PDF.',
+    'export.exportDocx': 'Export as DOCX',
+    'export.exporting': 'Exporting...',
+    'export.success': 'Export completed successfully!'
 };

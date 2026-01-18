@@ -94,6 +94,61 @@ fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
     fs::rename(&old_path, &new_path).map_err(|e| e.to_string())
 }
 
+/// Export document options
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ExportOptions {
+    pub format: String,      // "pdf" or "docx"
+    pub content: String,     // Markdown content
+    pub title: String,       // Document title
+    pub output_path: String, // Full path to save the file
+}
+
+/// Export document to DOCX
+#[tauri::command]
+fn export_document(options: ExportOptions) -> Result<(), String> {
+    export_to_docx(&options)
+}
+
+/// Export to DOCX using docx-rs
+fn export_to_docx(options: &ExportOptions) -> Result<(), String> {
+    use docx_rs::*;
+
+    let mut docx = Docx::new();
+
+    // Simple line-by-line parsing that preserves our outline structure
+    for line in options.content.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        // Check if this is a list item (starts with "- ")
+        if let Some(rest) = trimmed.strip_prefix("- ") {
+            // This is a node title - make it large heading (H1-like)
+            let para = Paragraph::new().add_run(Run::new().add_text(rest.trim()).size(28).bold());
+            docx = docx.add_paragraph(para);
+        } else if let Some(rest) = trimmed.strip_prefix("\\- ") {
+            // Escaped dash (was "- " in original content but escaped)
+            let para = Paragraph::new().add_run(Run::new().add_text(&format!("- {}", rest.trim())));
+            docx = docx.add_paragraph(para);
+        } else {
+            // Regular content line - plain paragraph (including # ## ### as literal text)
+            let para = Paragraph::new().add_run(Run::new().add_text(trimmed));
+            docx = docx.add_paragraph(para);
+        }
+    }
+
+    // Write to file
+    let file = std::fs::File::create(&options.output_path)
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    docx.build()
+        .pack(file)
+        .map_err(|e| format!("Failed to write DOCX: {}", e))?;
+
+    Ok(())
+}
+
 #[tauri::command]
 fn update_menu_language(app: tauri::AppHandle, lang: String) -> Result<(), String> {
     let menu = build_menu(&app, &lang).map_err(|e| e.to_string())?;
@@ -155,6 +210,11 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         "ウィンドウを閉じる"
     } else {
         "Close Window"
+    };
+    let t_export = if is_ja {
+        "エクスポート..."
+    } else {
+        "Export..."
     };
 
     let t_edit = if is_ja { "編集" } else { "Edit" };
@@ -229,6 +289,11 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .item(
             &MenuItemBuilder::with_id("save", t_save)
                 .accelerator("CmdOrCtrl+S")
+                .build(app)?,
+        )
+        .item(
+            &MenuItemBuilder::with_id("export", t_export)
+                .accelerator("CmdOrCtrl+Shift+E")
                 .build(app)?,
         )
         .separator()
@@ -381,6 +446,9 @@ pub fn run() {
                 "settings" => {
                     let _ = app.emit("menu-settings", ());
                 }
+                "export" => {
+                    let _ = app.emit("menu-export", ());
+                }
                 _ => {}
             }
         })
@@ -392,6 +460,7 @@ pub fn run() {
             delete_file,
             rename_file,
             update_menu_language,
+            export_document,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
