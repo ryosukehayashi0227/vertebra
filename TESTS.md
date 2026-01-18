@@ -434,6 +434,11 @@
 | Theme persistence | Theme setting is persisted |
 | Language persistence | Language setting is persisted |
 | No session - starts fresh | Starts fresh without session |
+| **Global Search** | |
+| Open Search Modal | Cmd+Shift+F triggers modal |
+| Perform Search | Input works (mocked) |
+| **Focus Mode** | |
+| Context Menu Option | Right-click shows Focus option |
 
 ---
 
