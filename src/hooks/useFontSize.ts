@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_FONT_SIZE = 16;
 const MIN_FONT_SIZE = 10;
 const MAX_FONT_SIZE = 24;
 
@@ -17,6 +17,9 @@ export function useFontSize() {
     // Apply font size to CSS variable and persist
     useEffect(() => {
         document.documentElement.style.setProperty('--user-font-size', `${fontSize}px`);
+        // Calculate integer line height to prevent sub-pixel layout drift in editor
+        const lineHeight = Math.round(fontSize * 1.6); // Slightly tighter than 1.7 for better density at larger sizes
+        document.documentElement.style.setProperty('--user-line-height', `${lineHeight}px`);
         localStorage.setItem('userFontSize', fontSize.toString());
     }, [fontSize]);
 

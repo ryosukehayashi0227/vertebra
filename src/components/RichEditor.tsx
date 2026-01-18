@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface RichEditorProps {
     content: string;
@@ -9,31 +9,138 @@ interface RichEditorProps {
 
 const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEditorProps) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const mirrorRef = useRef<HTMLDivElement>(null);
+    const [lineHeights, setLineHeights] = useState<number[]>([]);
+    const prevWidthRef = useRef<number>(0);
 
-    // Auto-resize textarea to fit content
-    const adjustHeight = () => {
+    // Auto-resize textarea to fit content and calculate line heights
+    const adjustHeightAndCalculateLines = useCallback(() => {
         const textarea = textareaRef.current;
-        if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        }
-    };
+        const mirror = mirrorRef.current;
+        if (!textarea || !mirror) return;
+
+        // Resize textarea
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+
+        // Copy styles relevant to layout
+        const computedStyle = window.getComputedStyle(textarea);
+
+        // Match width - subtract 1px buffer to account for sub-pixel rendering differences
+        // where textarea might wrap slightly earlier than the div
+        const width = textarea.clientWidth;
+        const safeWidth = width;
+
+        // Apply styles to mirror
+        mirror.style.width = `${safeWidth}px`;
+
+        // Font styles
+        mirror.style.fontSize = computedStyle.fontSize;
+        mirror.style.fontFamily = computedStyle.fontFamily;
+        mirror.style.fontWeight = computedStyle.fontWeight;
+        mirror.style.lineHeight = computedStyle.lineHeight;
+        mirror.style.letterSpacing = computedStyle.letterSpacing;
+        mirror.style.textIndent = computedStyle.textIndent;
+        mirror.style.textTransform = computedStyle.textTransform;
+        mirror.style.wordSpacing = computedStyle.wordSpacing;
+
+        // Wrapping behavior - FORCE these to match CSS
+        mirror.style.whiteSpace = 'pre-wrap';
+        mirror.style.wordBreak = 'break-all'; // Force break-all for CJK
+        mirror.style.overflowWrap = 'break-word'; // Force break-word
+        mirror.style.tabSize = computedStyle.tabSize;
+
+        // Box model
+        mirror.style.boxSizing = 'border-box';
+        mirror.style.paddingLeft = computedStyle.paddingLeft;
+        mirror.style.paddingRight = computedStyle.paddingRight;
+        mirror.style.paddingTop = '0px';
+        mirror.style.paddingBottom = '0px';
+        mirror.style.border = 'none';
+
+        // Calculate Heights (Hidden Mirror)
+        const lines = content.split('\n');
+        const heights: number[] = [];
+        lines.forEach(line => {
+            // Use zero-width space for empty lines to preserve height
+            mirror.textContent = line + '\u200b';
+            // IMPORTANT: clientHeight returns rounded integers, causing sub-pixel drift over many lines.
+            // getBoundingClientRect().height returns precise floats.
+            const rect = mirror.getBoundingClientRect();
+            heights.push(rect.height);
+        });
+
+        setLineHeights(heights);
+    }, [content]);
 
     useEffect(() => {
-        adjustHeight();
-    }, [content]);
+        // Initial calculation
+        adjustHeightAndCalculateLines();
+
+        // Store initial width
+        if (textareaRef.current) prevWidthRef.current = textareaRef.current.clientWidth;
+
+        let rafId: number;
+        const debouncedAdjust = () => {
+            cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                // Prevent infinite loop: only adjust if width changed or it's a non-textarea resize (e.g. font change)
+                if (textareaRef.current) {
+                    const currentWidth = textareaRef.current.clientWidth;
+                    // Check if width changed significantly or if forced check (like font change)
+                    // Using a small epsilon for float/layout comparison
+                    if (Math.abs(currentWidth - prevWidthRef.current) > 0.5) {
+                        prevWidthRef.current = currentWidth;
+                        adjustHeightAndCalculateLines();
+                    } else {
+                        // Even if width didn't change, height might have (due to font size).
+                        // We run calculation safely.
+                        adjustHeightAndCalculateLines();
+                    }
+                }
+            });
+        };
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.target === textareaRef.current) {
+                    // Only update if WIDTH changed to avoid height-loop
+                    if (entry.contentRect.width !== prevWidthRef.current) {
+                        prevWidthRef.current = entry.contentRect.width;
+                        debouncedAdjust();
+                    }
+                } else {
+                    // Body/Root resize logic (zoom etc) - Always update
+                    debouncedAdjust();
+                }
+            }
+        });
+
+        if (textareaRef.current) resizeObserver.observe(textareaRef.current);
+        resizeObserver.observe(document.body);
+
+        const mutationObserver = new MutationObserver((mutations) => {
+            debouncedAdjust();
+        });
+
+        mutationObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+        window.addEventListener('resize', debouncedAdjust);
+
+        return () => {
+            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+            window.removeEventListener('resize', debouncedAdjust);
+            cancelAnimationFrame(rafId);
+        };
+    }, [adjustHeightAndCalculateLines]);
 
     // Handle jump to content
     useEffect(() => {
         if (jumpToContent && content) {
             const lines = content.split('\n');
-            // Remove leading backslashes for markdown escape characters which might be present in search result
             const cleanTarget = jumpToContent.replace(/^\\/, '');
 
-            // Try flexible matching
             let targetLineIndex = lines.findIndex(line => line.includes(cleanTarget));
-
-            // If not found, try stripping whitespace
             if (targetLineIndex === -1) {
                 targetLineIndex = lines.findIndex(line => line.trim().includes(cleanTarget.trim()));
             }
@@ -42,22 +149,14 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
                 console.log('[RichEditor] Jumping to line:', targetLineIndex + 1);
                 const editorContainer = document.querySelector('.content-editor');
                 if (editorContainer) {
-                    // Line height calculation: 1.125rem (18px) * 1.7 (line-height) ≈ 30.6px
-                    const lineHeight = 18 * 1.7;
-                    const scrollTop = targetLineIndex * lineHeight - 100; // Offset for visibility
+                    const scrollTop = lineHeights.slice(0, targetLineIndex).reduce((sum, h) => sum + h, 0) - 100;
 
                     editorContainer.scrollTo({
                         top: Math.max(0, scrollTop),
                         behavior: 'smooth'
                     });
 
-                    // Highlight by selecting the text
-                    // We need to find the exact start index of the match in the full content
                     const matchIndex = content.indexOf(cleanTarget);
-
-                    // Fallback to fuzzy match if exact match fails (e.g. whitespace)
-                    // Note: This simple fallback might select the wrong instance if duplicates exist,
-                    // but it's better than nothing for now.
                     const finalIndex = matchIndex !== -1
                         ? matchIndex
                         : content.indexOf(cleanTarget.trim());
@@ -70,20 +169,39 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
                         textarea.setSelectionRange(finalIndex, finalIndex + matchLength);
                     }
                 }
-            } else {
-                console.log('[RichEditor] Target content not found in current node:', cleanTarget);
             }
         }
-    }, [jumpToContent, content]);
+    }, [jumpToContent, content, lineHeights]);
 
     const lines = content.split('\n');
-    const lineNumbers = lines.length > 0 ? lines.length : 1;
 
     return (
         <div className="simple-editor-wrapper">
+            {/* Hidden mirror for calculations */}
+            <div
+                ref={mirrorRef}
+                style={{
+                    position: 'absolute',
+                    visibility: 'hidden',
+                    height: 'auto',
+                    pointerEvents: 'none',
+                    zIndex: -1000,
+                    top: 0,
+                    left: 0,
+                    whiteSpace: 'pre-wrap',
+                    overflowWrap: 'break-word',
+                }}
+            />
             <div className="line-numbers">
-                {Array.from({ length: lineNumbers }).map((_, i) => (
-                    <div key={i + 1} className="line-number">
+                {lines.map((_, i) => (
+                    <div
+                        key={i + 1}
+                        className="line-number"
+                        style={{
+                            height: lineHeights[i] ? `${lineHeights[i]}px` : 'auto',
+                            // Removed minHeight to ensure exact match with Mirror Div calculation
+                        }}
+                    >
                         {i + 1}
                     </div>
                 ))}
