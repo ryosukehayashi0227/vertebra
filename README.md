@@ -133,5 +133,43 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
+## Documentation
+
+This project includes comprehensive documentation to help developers and AI agents understand and contribute to the codebase.
+
+### 📋 [SPEC.md](SPEC.md)
+**Technical Specifications** - Detailed architectural documentation covering:
+- Product overview and core philosophy
+- Technology stack and data structures
+- Implemented features and their specifications
+- File format (Markdown) and outline structure
+- Component architecture and state management
+
+### 🧪 [TESTS.md](TESTS.md)
+**Test Documentation** - Complete test suite reference:
+- Unit test catalog (261 tests across 20 files)
+- E2E test scenarios (37 tests)
+- Test commands and usage
+- Coverage reports and success metrics
+
+### 🤖 [AGENTS.md](AGENTS.md)
+**AI Agent Collaboration Guide** - Guidelines for AI coding assistants:
+- Development workflow and conventions
+- Code organization and patterns
+- Testing requirements and mocking strategies
+- Common issues and solutions
+- Quick reference for commands and defaults
+
+### 🔄 [REFACTORING_HANDOFF.md](REFACTORING_HANDOFF.md)
+**Refactoring History** - Documentation of major refactoring efforts:
+- Custom hooks extraction (useFontSize, useSidebarResize, etc.)
+- Code reduction and maintainability improvements
+- Test results and verification
+
+### Additional Resources
+- **README.md** (this file) - Getting started, features, and setup
+- **package.json** - Dependencies and npm scripts
+- **tsconfig.json** - TypeScript configuration
+
 ## Recommended IDE Setup
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
