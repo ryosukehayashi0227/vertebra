@@ -528,5 +528,133 @@ describe('Sidebar', () => {
             expect(sidebar).toHaveClass('collapsed');
         });
     });
+    describe('View Mode Switching', () => {
+        it('switches to files view when isCreatingFile becomes true', () => {
+            const { rerender } = render(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} folderPath={null} isCreatingFile={false} />
+                </LanguageProvider>
+            );
+
+            // Initially outline view (since no folder is open)
+            expect(screen.getByText('Outline')).toHaveClass('active');
+
+            // Update prop
+            rerender(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} folderPath={null} isCreatingFile={true} />
+                </LanguageProvider>
+            );
+
+            // Should switch to files view
+            expect(screen.getByText('Files')).toHaveClass('active');
+        });
+
+        it('switches to files view when folder is opened', () => {
+            const { rerender } = render(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} folderPath={null} selectedFilePath={null} />
+                </LanguageProvider>
+            );
+
+            rerender(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} folderPath="/new/path" selectedFilePath={null} />
+                </LanguageProvider>
+            );
+
+            expect(screen.getByText('Files')).toHaveClass('active');
+        });
+
+        it('switches to outline view when file is selected', () => {
+            const { rerender } = render(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} selectedFilePath={null} />
+                </LanguageProvider>
+            );
+
+            // Manually switch to files to test the transition
+            fireEvent.click(screen.getByText('Files'));
+            expect(screen.getByText('Files')).toHaveClass('active');
+
+            // Select file
+            rerender(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} selectedFilePath="/path/to/file.md" />
+                </LanguageProvider>
+            );
+
+            expect(screen.getByText('Outline')).toHaveClass('active');
+        });
+    });
+
+    describe('Drag and Drop', () => {
+        it('calls onMoveNode when node is dragged and dropped', () => {
+            const outline = [
+                { id: '1', text: 'Source', content: '', level: 0, children: [] },
+                { id: '2', text: 'Target', content: '', level: 0, children: [] },
+            ];
+            const onMoveNode = vi.fn();
+
+            render(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} outline={outline} onMoveNode={onMoveNode} />
+                </LanguageProvider>
+            );
+
+            // Switch to outline view
+            fireEvent.click(screen.getByText('Outline'));
+
+            const sourceNode = screen.getByText('Source').closest('.sidebar-outline-item');
+            const targetNode = screen.getByText('Target').closest('.sidebar-outline-node');
+
+            // Start drag
+            fireEvent.mouseDown(sourceNode!, { clientX: 10, clientY: 10, button: 0 });
+
+            // Mock document.elementsFromPoint for mouse move
+            // We need to mock this because jsdom doesn't fully support layout/geometry
+            // Use explicit property assignment since spread/assign might not work on document validation
+            Object.defineProperty(document, 'elementsFromPoint', {
+                writable: true,
+                value: vi.fn().mockReturnValue([targetNode])
+            });
+
+            // Mock getBoundingClientRect for target calculation
+            // Simulate dragging to the bottom part of target (position: 'after')
+            vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+                top: 100,
+                bottom: 140,
+                height: 40,
+                left: 0,
+                right: 200,
+                width: 200,
+                x: 0,
+                y: 100, // Explicitly provide x and y which are required by DOMRect
+                toJSON: () => { }
+            } as DOMRect);
+
+            // Move mouse (to trigger findTargetFromPoint)
+            fireEvent.mouseMove(document, { clientX: 50, clientY: 135 }); // 135 is > 100 + 40*0.75 (130) -> 'after'
+
+            // Drop
+            fireEvent.mouseUp(document);
+
+            // Verify
+            expect(onMoveNode).toHaveBeenCalledWith('1', '2', 'after');
+        });
+    });
+
+    describe('Empty States', () => {
+        it('shows empty hint when outline is empty', () => {
+            render(
+                <LanguageProvider>
+                    <Sidebar {...defaultProps} outline={[]} />
+                </LanguageProvider>
+            );
+
+            fireEvent.click(screen.getByText('Outline'));
+            expect(screen.getByText('項目がありません')).toBeInTheDocument();
+        });
+    });
 });
 
