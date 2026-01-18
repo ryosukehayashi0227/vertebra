@@ -978,7 +978,7 @@
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 1.125rem;
   line-height: 1.7;
   color: var(--color-text-secondary);
@@ -989,7 +989,7 @@
 }
 
 .line-number {
-  height: 1.7em;
+  /* Removed fixed height to rely on line-height */
 }
 
 .simple-textarea {
@@ -1001,7 +1001,7 @@
   color: var(--color-text-primary);
   font-size: 1.125rem;
   line-height: 1.7;
-  font-family: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   resize: none;
   outline: none;
   min-height: 500px;

@@ -12,11 +12,12 @@ interface EditorProps {
     onOutlineChange: (outline: OutlineNode[]) => void;
     onSave: () => void;
     hideSaveButton?: boolean;
+    jumpToContent?: string | null;
 }
 
 import RichEditor from "./RichEditor";
 
-function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveButton }: EditorProps) {
+function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveButton, jumpToContent }: EditorProps) {
     const { t } = useLanguage();
     const selectedNode = useMemo(() => {
         if (!selectedNodeId) return null;
@@ -81,6 +82,7 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveBut
                     content={selectedNode.content}
                     onChange={(markdown) => handleUpdateNode(selectedNode.id, { content: markdown })}
                     placeholder={t('editor.contentPlaceholder')}
+                    jumpToContent={jumpToContent}
                 />
             </div>
         </div>
