@@ -191,6 +191,7 @@ describe('ExportModal', () => {
 
     describe('Error Handling', () => {
         it('should display error message when export fails', async () => {
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
             mockSave.mockResolvedValue('/path/to/file.docx');
             mockInvoke.mockRejectedValue(new Error('Export failed'));
 
@@ -200,9 +201,12 @@ describe('ExportModal', () => {
             await waitFor(() => {
                 expect(screen.getByText('Error: Export failed')).toBeInTheDocument();
             });
+
+            consoleSpy.mockRestore();
         });
 
         it('should re-enable export button after error', async () => {
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
             mockSave.mockResolvedValue('/path/to/file.docx');
             mockInvoke.mockRejectedValue(new Error('Export failed'));
 
@@ -215,6 +219,8 @@ describe('ExportModal', () => {
             });
 
             expect(exportButton).not.toBeDisabled();
+
+            consoleSpy.mockRestore();
         });
     });
 
