@@ -1,0 +1,114 @@
+.sidebar-outline-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-outline-node {
+    position: relative;
+}
+
+.sidebar-outline-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+    user-select: none;
+}
+
+.sidebar-outline-item:hover {
+    background: var(--bg-hover);
+}
+
+.sidebar-outline-item.selected {
+    background: var(--bg-selected);
+}
+
+.sidebar-outline-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-collapse-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+    color: var(--text-primary);
+}
+
+.sidebar-outline-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.sidebar-node-stats {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.sidebar-outline-children {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Drag & Drop states */
+.sidebar-outline-node.is-dragging {
+    opacity: 0.5;
+}
+
+.sidebar-outline-node.drag-over-before::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-color);
+    z-index: 10;
+}
+
+.sidebar-outline-node.drag-over-after::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-color);
+    z-index: 10;
+}
+
+.sidebar-outline-node.drag-over-inside>.sidebar-outline-item {
+    background: var(--accent-color-alpha);
+    border: 1px dashed var(--accent-color);
+}
+
+/* Search highlighting */
+.sidebar-outline-node.search-match>.sidebar-outline-item {
+    background: var(--search-highlight);
+}
+
+.sidebar-outline-node.search-match>.sidebar-outline-item .sidebar-outline-text {
+    font-weight: 600;
+}
