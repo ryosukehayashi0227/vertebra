@@ -1,8 +1,22 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import Editor from './Editor';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import type { Document } from '../App';
+
+// Mock ResizeObserver for RichEditor component
+beforeAll(() => {
+    (globalThis as any).ResizeObserver = class ResizeObserver {
+        observe() { }
+        unobserve() { }
+        disconnect() { }
+    };
+});
+
+// Mock Tauri OS detection
+vi.mock('@tauri-apps/plugin-os', () => ({
+    type: vi.fn().mockResolvedValue('macos'),
+}));
 
 const mockDocument: Document = {
     path: '/test/file.md',

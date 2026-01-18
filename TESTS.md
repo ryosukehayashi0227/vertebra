@@ -1,6 +1,6 @@
 # Vertebra Test Documentation
 
-## Unit Tests (263 tests)
+## Unit Tests (261 tests)
 
 ### App.test.tsx (9 tests)
 | Test Name | Description |
@@ -163,10 +163,20 @@
 
 ---
 
-### RichEditor.test.tsx (4 tests)
+### RichEditor.test.tsx (8 tests)
 | Test Name | Description |
 |-----------|-------------|
-| renders textarea with content | Content rendering |
+| renders at least one line number for empty content | Line number rendering for empty content |
+| renders correct number of line numbers for multi-line content | Line number count verification |
+| updates line numbers when content changes | Dynamic line number updates |
+| renders textarea with content | Textarea content rendering |
+| **Line Height Calculation** | |
+| should calculate correct line heights for wrapped text | Verifies line height calculation for text wrapping |
+| should update line heights when container width changes | Tests line height recalculation on width change |
+| **Font Size Integration** | |
+| should recalculate line heights when font size changes | Tests MutationObserver for CSS variable changes |
+| **Jump to Content** | |
+| should scroll to and highlight target content when jumpToContent prop changes | Tests jump to content functionality |
 
 ---
 
@@ -200,14 +210,15 @@
 
 ---
 
-### hooks/useFontSize.test.ts (18 tests)
+### hooks/useFontSize.test.ts (19 tests)
 | Test Name | Description |
 |-----------|-------------|
 | **Initialization** | |
-| should initialize with default font size (14px) | Default initialization |
+| should initialize with default font size (16px) | Default initialization |
 | should restore font size from localStorage | Persistence restoration |
 | should use default if localStorage has invalid value | Fallback logic |
 | should apply initial font size to CSS variable | CSS variable application |
+| should set line-height CSS variable based on font size | Line-height CSS variable calculation |
 | **Zoom In** | |
 | should increase font size by 1 | Increment logic |
 | should not exceed maximum font size (24px) | Max boundary |
@@ -219,7 +230,7 @@
 | should update CSS variable after zoom out | CSS update |
 | should persist to localStorage after zoom out | Persistence |
 | **Reset** | |
-| should reset font size to default (14px) | Reset logic |
+| should reset font size to default (16px) | Reset logic |
 | should update CSS variable after reset | CSS update |
 | should persist to localStorage after reset | Persistence |
 | **Edge Cases** | |
@@ -477,9 +488,9 @@
 
 ## Test Summary
 
-- **Unit Tests**: 251 tests
-- **E2E Tests**: 37 tests (15 new tests added)
-- **Total**: 288 tests
+- **Unit Tests**: 261 tests
+- **E2E Tests**: 37 tests
+- **Total**: 298 tests
 - **Success Rate**: 100%
 
 ---

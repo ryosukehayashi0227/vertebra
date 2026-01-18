@@ -119,7 +119,7 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
         if (textareaRef.current) resizeObserver.observe(textareaRef.current);
         resizeObserver.observe(document.body);
 
-        const mutationObserver = new MutationObserver((mutations) => {
+        const mutationObserver = new MutationObserver(() => {
             debouncedAdjust();
         });
 
