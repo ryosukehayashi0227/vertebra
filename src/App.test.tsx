@@ -28,13 +28,13 @@ describe('App Session Restoration', () => {
         localStorage.clear();
         // Reset localStorage.getItem implementation in case it was modified
         vi.mocked(localStorage.getItem).mockImplementation((key) => {
-             // Access the underlying store from the setup file if possible,
-             // but since we can't easily access the closure 'store',
-             // we should rely on setItem/getItem behavior if we didn't mock implementation.
-             // BUT, the previous tests mocked implementation.
-             // Best practice: Don't mock implementation of localStorage if it's already mocked in setup.
-             // Just use setItem.
-             return null;
+            // Access the underlying store from the setup file if possible,
+            // but since we can't easily access the closure 'store',
+            // we should rely on setItem/getItem behavior if we didn't mock implementation.
+            // BUT, the previous tests mocked implementation.
+            // Best practice: Don't mock implementation of localStorage if it's already mocked in setup.
+            // Just use setItem.
+            return null;
         });
     });
 
@@ -43,19 +43,9 @@ describe('App Session Restoration', () => {
     });
 
     it('should restore folder from localStorage on mount', async () => {
-        // Use setItem instead of mocking implementation
-        localStorage.setItem('lastFolderPath', '/saved/path');
-
-        // We need to ensure getItem returns what we set.
-        // Since we overwrote implementation in previous runs (if any), we need to be careful.
-        // Let's just fix the test to use setItem and NOT mock implementation,
-        // assuming vitest.setup.ts implementation is active.
-        // HOWEVER, vitest.setup.ts defines localStorageMock with vi.fn().
-        // So we can restore it.
-
         vi.mocked(localStorage.getItem).mockImplementation((key) => {
-             if (key === 'lastFolderPath') return '/saved/path';
-             return null;
+            if (key === 'lastFolderPath') return '/saved/path';
+            return null;
         });
 
         (fileSystem.readDirectory as any).mockResolvedValue([
@@ -66,12 +56,13 @@ describe('App Session Restoration', () => {
             render(<App />);
         });
 
-        // Resolve promises and run effects
+        // Wait for useEffect to complete (useSessionRestore hook)
         await act(async () => {
-            vi.runAllTimers();
+            await Promise.resolve(); // Flush microtasks
+            await Promise.resolve(); // Allow useEffect to run
         });
 
-        // Check expectation immediately after timers run
+        // Check expectation
         expect(fileSystem.readDirectory).toHaveBeenCalledWith('/saved/path');
     });
 
@@ -91,14 +82,11 @@ describe('App Session Restoration', () => {
             render(<App />);
         });
 
-        // Allow loadFolder to complete
+        // Wait for useEffect to complete and all async operations
         await act(async () => {
             await Promise.resolve(); // Flush microtasks
-        });
-
-        // Run timers for setTimeout (restoring file)
-        await act(async () => {
-            vi.runAllTimers();
+            await Promise.resolve(); // Allow useEffect to run
+            await Promise.resolve(); // Allow nested async calls
         });
 
         expect(fileSystem.readDirectory).toHaveBeenCalledWith('/saved/path');
@@ -119,15 +107,16 @@ describe('App Session Restoration', () => {
             render(<App />);
         });
 
+        // Wait for all async operations including error handling
         await act(async () => {
-            await Promise.resolve();
+            await Promise.resolve(); // Flush microtasks
+            await Promise.resolve(); // Allow useEffect to run
+            await Promise.resolve(); // Allow error handling
         });
 
-        await act(async () => {
-            vi.runAllTimers();
-        });
-
+        // Should have attempted to read the file
         expect(fileSystem.readFile).toHaveBeenCalledWith('/saved/path/missing.md');
+        // Should have removed the invalid path
         expect(localStorage.removeItem).toHaveBeenCalledWith('lastFilePath');
     });
 });

@@ -32,6 +32,7 @@ import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
 import { useUndoRedo } from "./hooks/useUndoRedo";
 import { useSplitView } from "./hooks/useSplitView";
+import { useSessionRestore } from "./hooks/useSessionRestore";
 
 
 export interface Document {
@@ -57,9 +58,6 @@ function AppContent() {
   // Font Size (from hook)
   const { zoomIn, zoomOut, resetZoom } = useFontSize();
 
-  // Initialization state (Start true to prevent flicker, turn off if no session)
-  const [isInitializing, setIsInitializing] = useState(true);
-
   // Sidebar resize (from hook)
   const { sidebarWidth, startResizing } = useSidebarResize();
 
@@ -84,27 +82,6 @@ function AppContent() {
 
 
 
-  const isSessionRestored = useRef(false);
-  const isRestoreStarted = useRef(false);
-
-  // Save state when folder or file changes (skip until session is restored)
-  useEffect(() => {
-    if (!isSessionRestored.current) return;
-    if (folderPath) {
-      localStorage.setItem('lastFolderPath', folderPath);
-    }
-  }, [folderPath]);
-
-  useEffect(() => {
-    if (!isSessionRestored.current) return;
-    if (selectedFilePath) {
-      console.log('[State Save] Saving file path to localStorage:', selectedFilePath);
-      localStorage.setItem('lastFilePath', selectedFilePath);
-    } else {
-      console.log('[State Save] Removing file path from localStorage');
-      localStorage.removeItem('lastFilePath');
-    }
-  }, [selectedFilePath]);
 
   // Load folder contents (updates currentPath and files, but not folderPath)
   const loadFolder = useCallback(async (path: string) => {
@@ -225,6 +202,34 @@ function AppContent() {
     }
   }, []);
 
+  // Session Restore Hook (must be after handleSelectFile is defined)
+  const { isInitializing, isSessionRestored } = useSessionRestore({
+    onRestoreFolder: async (path) => {
+      setFolderPath(path);
+      await loadFolder(path);
+    },
+    onRestoreFile: handleSelectFile
+  });
+
+  // Save state when folder or file changes (skip until session is restored)
+  useEffect(() => {
+    if (!isSessionRestored) return;
+    if (folderPath) {
+      localStorage.setItem('lastFolderPath', folderPath);
+    }
+  }, [folderPath, isSessionRestored]);
+
+  useEffect(() => {
+    if (!isSessionRestored) return;
+    if (selectedFilePath) {
+      console.log('[State Save] Saving file path to localStorage:', selectedFilePath);
+      localStorage.setItem('lastFilePath', selectedFilePath);
+    } else {
+      console.log('[State Save] Removing file path from localStorage');
+      localStorage.removeItem('lastFilePath');
+    }
+  }, [selectedFilePath, isSessionRestored]);
+
   // Update outline (called from Editor)
   const handleOutlineChange = useCallback((newOutline: OutlineNode[]) => {
     setCurrentDocument((prev) => {
@@ -344,49 +349,7 @@ function AppContent() {
     }
   }, [currentDocument, handleOutlineChange, selectedNodeId, pushHistory]);
 
-  // Restore previous session on mount
-  useEffect(() => {
-    if (isRestoreStarted.current) return;
-    isRestoreStarted.current = true;
 
-    const restoreSession = async () => {
-      try {
-        const savedFolderPath = localStorage.getItem('lastFolderPath');
-        const savedFilePath = localStorage.getItem('lastFilePath');
-
-        console.log('[Session Restore] Saved folder:', savedFolderPath);
-        console.log('[Session Restore] Saved file:', savedFilePath);
-
-        if (savedFolderPath) {
-          // First set the root folder path and load the folder
-          setFolderPath(savedFolderPath);
-          await loadFolder(savedFolderPath);
-
-          // Then open the file if it was saved
-          if (savedFilePath) {
-            try {
-              console.log('[Session Restore] Attempting to open file:', savedFilePath);
-              await handleSelectFile(savedFilePath);
-              console.log('[Session Restore] File opened successfully');
-            } catch (error) {
-              console.error('[Session Restore] Failed to open file:', error);
-              // Clear invalid file path
-              localStorage.removeItem('lastFilePath');
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[Session Restore] Failed to restore session:', error);
-      } finally {
-        // Mark session as restored to enable state saving
-        isSessionRestored.current = true;
-        setIsInitializing(false); // Hide splash screen
-        console.log('[Session Restore] Session restoration complete');
-      }
-    };
-
-    restoreSession();
-  }, [loadFolder, handleSelectFile]);
 
   // Keyboard shortcuts
   useEffect(() => {
