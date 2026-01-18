@@ -71,4 +71,25 @@ describe('SettingsModal', () => {
 
         expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
+
+    it('switches language when language button is clicked', () => {
+        renderWithProviders(<SettingsModal isOpen={true} onClose={vi.fn()} />);
+
+        const japaneseButton = screen.getByText('日本語');
+        fireEvent.click(japaneseButton);
+
+        // Verify button has active class after click
+        expect(japaneseButton).toHaveClass('active');
+    });
+
+    it('does not close when clicking modal content', () => {
+        const onClose = vi.fn();
+        const { container } = renderWithProviders(<SettingsModal isOpen={true} onClose={onClose} />);
+
+        const modalContent = container.querySelector('.settings-modal');
+        if (modalContent) {
+            fireEvent.click(modalContent);
+            expect(onClose).not.toHaveBeenCalled();
+        }
+    });
 });

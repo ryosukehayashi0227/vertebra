@@ -1,6 +1,6 @@
 # Vertebra Test Documentation
 
-## Unit Tests (221 tests)
+## Unit Tests (215 tests)
 
 ### App.test.tsx (9 tests)
 | Test Name | Description |
@@ -17,7 +17,7 @@
 
 ---
 
-### Editor.test.tsx (16 tests)
+### Editor.test.tsx (14 tests)
 | Test Name | Description |
 |-----------|-------------|
 | renders save button by default | Save button is displayed by default |
@@ -128,16 +128,18 @@
 | shows empty hint when outline is empty | Empty state |
 ---
 
-### SettingsModal.test.tsx (6 tests)
+### SettingsModal.test.tsx (9 tests)
 | Test Name | Description |
 |-----------|-------------|
-| renders when isOpen is true | Modal visibility |
 | does not render when isOpen is false | Modal visibility |
+| renders when isOpen is true | Modal visibility |
 | calls onClose when close button is clicked | Close button action |
 | calls onClose when overlay is clicked | Overlay click action |
 | displays theme options | Theme verification |
 | displays language options | Language verification |
 | switches theme when theme button is clicked | Theme switching |
+| switches language when language button is clicked | Language switching |
+| does not close when clicking modal content | Modal content click prevention |
 
 ---
 
@@ -149,7 +151,7 @@
 
 ---
 
-### RichEditor.test.tsx (1 test)
+### RichEditor.test.tsx (4 tests)
 | Test Name | Description |
 |-----------|-------------|
 | renders textarea with content | Content rendering |
@@ -186,7 +188,7 @@
 
 ---
 
-### hooks/useSplitView.test.ts (14 tests)
+### hooks/useSplitView.test.ts (18 tests)
 | Test Name | Description |
 |-----------|-------------|
 | should initialize with split view disabled | Initial state |
@@ -202,7 +204,7 @@
 
 ---
 
-### hooks/useUndoRedo.test.ts (13 tests)
+### hooks/useUndoRedo.test.ts (15 tests)
 | Test Name | Description |
 |-----------|-------------|
 | should push current outline to undo stack | Push logic |
