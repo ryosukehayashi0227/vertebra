@@ -42,6 +42,10 @@ interface SidebarProps {
     onOpenInSecondaryPane?: (nodeId: string) => void;
     // Settings
     onOpenSettings?: () => void;
+    // Focus Mode
+    focusRootId?: string | null;
+    onEnterFocus?: (id: string) => void;
+    onExitFocus?: () => void;
 }
 
 function Sidebar({
@@ -72,7 +76,11 @@ function Sidebar({
     isSplitView,
     onToggleSplitView,
     onOpenInSecondaryPane,
-    onOpenSettings
+    onOpenSettings,
+    // Focus Mode
+    focusRootId,
+    onEnterFocus,
+    onExitFocus
 }: SidebarProps) {
     const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<ViewMode>("outline");
@@ -84,11 +92,35 @@ function Sidebar({
     // Search state
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Calculate visible nodes based on search query
+    // Calculate visible nodes based on search query or focus mode
     const searchResult = useMemo(() => {
         if (!searchQuery.trim()) return null; // null means "show all"
         return filterNodes(outline, searchQuery);
     }, [outline, searchQuery]);
+
+    // Focus Mode: Filter outline to show only focused node subtree
+    const displayedOutline = useMemo(() => {
+        if (focusRootId) {
+            const focusedNode = findNodeById(outline, focusRootId);
+            if (focusedNode) {
+                return [focusedNode];
+            } else {
+                // Focused node not found (e.g. deleted), exit focus mode
+                // We can't call onExitFocus here directly during render, use effect
+            }
+        }
+        return outline;
+    }, [outline, focusRootId]);
+
+    // Auto-exit focus mode if focused node is deleted
+    useEffect(() => {
+        if (focusRootId && onExitFocus) {
+            const focusedNode = findNodeById(outline, focusRootId);
+            if (!focusedNode) {
+                onExitFocus();
+            }
+        }
+    }, [outline, focusRootId, onExitFocus]);
 
     useEffect(() => {
         const handleClickOutside = () => setContextMenu(null);
@@ -175,18 +207,31 @@ function Sidebar({
         setContextMenu({ x: e.clientX, y: e.clientY, targetId: nodeId, type: "outline" });
     }, []);
 
+
+
+    // Focus Mode UI
+    const isFocused = !!focusRootId;
+    const focusedNodeName = isFocused ? findNodeById(outline, focusRootId!)?.text : "";
+
     return (
         <aside
-            className={`sidebar ${isCollapsed ? "collapsed" : ""}`}
+            className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isFocused ? "focus-mode" : ""}`}
             onClick={() => setContextMenu(null)}
             style={width && !isCollapsed ? { width: `${width}px`, minWidth: `${width}px`, flexBasis: `${width}px` } : undefined}
         >
             <div className="sidebar-header">
-                {!isCollapsed && (
+                {!isCollapsed && !isFocused && (
                     <ViewSelector
                         viewMode={viewMode}
                         onViewModeChange={setViewMode}
                     />
+                )}
+                {!isCollapsed && isFocused && (
+                    <div className="sidebar-focus-header">
+                        <span className="focus-label">Focusing: </span>
+                        <span className="focus-target" title={focusedNodeName}>{focusedNodeName || "Section"}</span>
+                        <button className="exit-focus-btn" onClick={onExitFocus} title="Exit Focus Mode">×</button>
+                    </div>
                 )}
                 <div className="sidebar-actions">
                     {folderPath && !isCollapsed && (
@@ -251,7 +296,7 @@ function Sidebar({
                                             <p className="sidebar-empty-hint">項目がありません</p>
                                         ) : (
                                             <OutlineView
-                                                outline={outline}
+                                                outline={displayedOutline}
                                                 selectedNodeId={selectedNodeId}
                                                 onSelectNode={onSelectNode}
                                                 onMoveNode={onMoveNode}
@@ -290,6 +335,7 @@ function Sidebar({
                     onOutdent={onOutdent}
                     onDeleteNode={handleDeleteNode}
                     onOpenInSecondaryPane={onOpenInSecondaryPane}
+                    onFocusNode={onEnterFocus ? (id) => { onEnterFocus(id); setContextMenu(null); } : undefined}
                 />
             )}
 

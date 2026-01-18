@@ -33,6 +33,7 @@ import { useFontSize } from "./hooks/useFontSize";
 import { useUndoRedo } from "./hooks/useUndoRedo";
 import { useSplitView } from "./hooks/useSplitView";
 import { useSessionRestore } from "./hooks/useSessionRestore";
+import { useFocusMode } from "./hooks/useFocusMode";
 
 
 export interface Document {
@@ -60,6 +61,13 @@ function AppContent() {
 
   // Sidebar resize (from hook)
   const { sidebarWidth, startResizing } = useSidebarResize();
+
+  // Focus Mode (from hook)
+  const {
+    focusRootId,
+    enterFocusMode,
+    exitFocusMode
+  } = useFocusMode();
 
   // Split View (from hook)
   const {
@@ -505,6 +513,9 @@ function AppContent() {
           if (!isSplitView) setIsSplitView(true);
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        focusRootId={focusRootId}
+        onEnterFocus={enterFocusMode}
+        onExitFocus={exitFocusMode}
       />
       <main className="main-content">
         {isLoading ? (

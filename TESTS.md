@@ -91,7 +91,7 @@
 
 ---
 
-### Sidebar.test.tsx (25 tests)
+### Sidebar.test.tsx (30 tests)
 | Test Name | Description |
 |-----------|-------------|
 | renders file list correctly | File list renders properly |
@@ -101,6 +101,11 @@
 | filters outline nodes by search query | Search filters outline nodes |
 | shows confirm dialog and calls onDeleteNode | Delete confirmation dialog works |
 | displays character counts for outline nodes | Character counts are displayed |
+| **Focus Mode** | |
+| renders filtered outline | Shows only focused subtree |
+| handles context menu | Focus option sets focus |
+| handles exit focus | Exit button clears focus |
+| auto-exit on delete | Clears focus if node deleted |
 | **Folder Navigation** | |
 | calls onNavigateToFolder when folder is clicked | Folder click navigates into folder |
 | shows back button when in subfolder | Back button visible in subfolder |
