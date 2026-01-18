@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { OutlineNode } from '../../lib/outline';
 import { countStats } from '../../lib/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -8,6 +8,7 @@ import './OutlineView.css';
 interface OutlineViewProps {
     outline: OutlineNode[];
     selectedNodeId: string | null;
+    highlightedNodeId?: string | null;
     onSelectNode: (id: string) => void;
     onMoveNode: (sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
     onContextMenu: (e: React.MouseEvent, nodeId: string) => void;
@@ -19,6 +20,7 @@ interface OutlineViewProps {
 export default function OutlineView({
     outline,
     selectedNodeId,
+    highlightedNodeId,
     onSelectNode,
     onMoveNode,
     onContextMenu,
@@ -29,6 +31,47 @@ export default function OutlineView({
     const { t } = useLanguage();
     const [dragOverInfo, setDragOverInfo] = useState<DragOverInfo | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
+
+    const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+    // Scroll to highlighted node
+    useEffect(() => {
+        if (highlightedNodeId) {
+            // Use setTimeout to ensure DOM is fully updated
+            setTimeout(() => {
+                const element = itemRefs.current.get(highlightedNodeId);
+                const scrollContainer = document.querySelector('.sidebar-scroll-container');
+
+                if (element && scrollContainer) {
+                    const containerRect = scrollContainer.getBoundingClientRect();
+                    const elementRect = element.getBoundingClientRect();
+
+                    const relativeTop = elementRect.top - containerRect.top;
+                    const currentScroll = scrollContainer.scrollTop;
+
+                    // Align to top instead of center
+                    const targetScrollTop = currentScroll + relativeTop - 10; // 10px padding from top
+
+                    console.log('[Scroll Debug]', {
+                        beforeScrollTop: currentScroll,
+                        targetScrollTop: targetScrollTop,
+                        relativeTop: relativeTop,
+                        elementTop: elementRect.top,
+                        containerTop: containerRect.top
+                    });
+
+                    scrollContainer.scrollTo({ top: targetScrollTop, behavior: 'instant' }); // Use instant to verify movement
+
+                    // Log after scroll
+                    setTimeout(() => {
+                        console.log('[Scroll Debug] After scroll scrollTop:', scrollContainer.scrollTop);
+                    }, 50);
+                } else {
+                    console.log('[Scroll Debug] Element or container missing');
+                }
+            }, 100);
+        }
+    }, [highlightedNodeId]);
 
     // Find the target node from mouse coordinates
     const findTargetFromPoint = useCallback((x: number, y: number) => {
@@ -105,13 +148,20 @@ export default function OutlineView({
         }
 
         const isSelected = selectedNodeId === node.id;
+        const isHighlighted = node.id === highlightedNodeId;
         const hasChildren = node.children.length > 0;
         const isCollapsed = searchResult ? false : collapsedNodes.has(node.id);
         const isTarget = dragOverInfo?.id === node.id;
         const isSelf = draggingId === node.id;
         const isMatched = searchResult?.matchedIds.has(node.id);
 
+        if (isHighlighted) {
+            // Highlighted logic
+        }
+
         const isDraggable = !searchResult;
+
+        const itemClassName = `sidebar-outline-item ${isSelected ? "selected" : ""} ${isHighlighted ? "highlighted" : ""}`;
 
         return (
             <li
@@ -120,7 +170,11 @@ export default function OutlineView({
                 data-node-id={node.id}
             >
                 <div
-                    className={`sidebar-outline-item ${isSelected ? "selected" : ""}`}
+                    ref={(el) => {
+                        if (el) itemRefs.current.set(node.id, el);
+                        else itemRefs.current.delete(node.id);
+                    }}
+                    className={itemClassName}
                     style={{ paddingLeft: `${node.level * 20 + 8}px`, cursor: isDraggable ? 'grab' : 'default' }}
                     onMouseDown={isDraggable ? (e) => handleMouseDown(e, node.id) : undefined}
                     onClick={() => !draggingId && onSelectNode(node.id)}

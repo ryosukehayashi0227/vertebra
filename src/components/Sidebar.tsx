@@ -46,6 +46,7 @@ interface SidebarProps {
     focusRootId?: string | null;
     onEnterFocus?: (id: string) => void;
     onExitFocus?: () => void;
+    highlightedNodeId?: string | null;
 }
 
 function Sidebar({
@@ -80,13 +81,21 @@ function Sidebar({
     // Focus Mode
     focusRootId,
     onEnterFocus,
-    onExitFocus
+    onExitFocus,
+    highlightedNodeId,
 }: SidebarProps) {
     const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<ViewMode>("outline");
     const [newFileName, setNewFileName] = useState("");
     const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
     const listRef = useRef<HTMLUListElement>(null);
+
+    // Auto-switch to outline view when highlighting a node
+    useEffect(() => {
+        if (highlightedNodeId && outline.length > 0) {
+            setViewMode('outline');
+        }
+    }, [highlightedNodeId, outline.length]);
     const [contextMenu, setContextMenu] = useState<ContextMenuInfo | null>(null);
 
     // Search state
@@ -291,13 +300,15 @@ function Sidebar({
                                             onChange={setSearchQuery}
                                         />
                                     </div>
-                                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                                    <div className="sidebar-scroll-container" style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
                                         {outline.length === 0 ? (
                                             <p className="sidebar-empty-hint">項目がありません</p>
                                         ) : (
                                             <OutlineView
+                                                key={`outline-${highlightedNodeId || 'default'}`}
                                                 outline={displayedOutline}
                                                 selectedNodeId={selectedNodeId}
+                                                highlightedNodeId={highlightedNodeId}
                                                 onSelectNode={onSelectNode}
                                                 onMoveNode={onMoveNode}
                                                 onContextMenu={handleOutlineContextMenu}

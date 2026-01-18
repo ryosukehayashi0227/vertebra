@@ -29,6 +29,13 @@
     background: var(--bg-selected);
 }
 
+/* Highlighted state takes precedence over selected */
+.sidebar-outline-item.highlighted,
+.sidebar-outline-item.selected.highlighted {
+    background-color: rgba(255, 235, 59, 0.3) !important;
+    transition: background-color 0.3s ease-out;
+}
+
 .sidebar-outline-item:active {
     cursor: grabbing;
 }

@@ -87,6 +87,7 @@ function AppContent() {
   // Export modal state
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
 
 
@@ -134,11 +135,18 @@ function AppContent() {
     }
   }, [currentPath, folderPath, loadFolder]);
 
-  // Load file content
+  // Jump to content within the editor
+  const [jumpToContent, setJumpToContent] = useState<string | null>(null);
+
   const handleSelectFile = useCallback(async (filePath: string, targetContent?: string) => {
     console.log('[handleSelectFile] Opening file:', filePath);
     if (targetContent) {
       console.log('[handleSelectFile] Jumping to content:', targetContent);
+      // Clean up the targeted content - exact match might fail due to whitespace/formatting
+      // so we pass the raw target content and let the editor handle fuzzy matching if needed
+      setJumpToContent(targetContent);
+      // Auto-clear jump target after 2s
+      setTimeout(() => setJumpToContent(null), 2000);
     }
     setIsLoading(true);
     try {
@@ -167,6 +175,11 @@ function AppContent() {
 
       if (foundNodeId) {
         setSelectedNodeId(foundNodeId);
+        setHighlightedNodeId(foundNodeId);
+        // Auto-clear highlight after 3 seconds (increased from 2)
+        setTimeout(() => {
+          setHighlightedNodeId(null);
+        }, 3000);
       } else {
         // Restore saved node IDs or fallback to first node
         if (outline.length > 0) {
@@ -514,6 +527,7 @@ function AppContent() {
         setIsCreatingFile={setIsCreatingFile}
         outline={currentDocument?.outline || []}
         selectedNodeId={activePane === 'primary' ? selectedNodeId : secondaryNodeId}
+        highlightedNodeId={highlightedNodeId}
         onSelectNode={(nodeId) => {
           if (isSplitView && activePane === 'secondary') {
             setSecondaryNodeId(nodeId);
@@ -577,6 +591,7 @@ function AppContent() {
                   onOutlineChange={handleOutlineChangeWithHistory}
                   onSave={handleSave}
                   hideSaveButton={isSplitView}
+                  jumpToContent={jumpToContent}
                 />
               </div>
               {isSplitView && (
