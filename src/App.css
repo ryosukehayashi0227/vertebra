@@ -979,8 +979,8 @@
   flex-direction: column;
   user-select: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: var(--user-font-size, 16px);
+  line-height: var(--user-line-height, 27px);
   color: var(--color-text-secondary);
   opacity: 0.3;
   text-align: right;
@@ -995,19 +995,22 @@
 .simple-textarea {
   flex: 1;
   width: 100%;
-  padding: 0;
-  border: none;
   background: none;
   color: var(--color-text-primary);
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: var(--user-font-size, 16px);
+  line-height: var(--user-line-height, 27px);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   resize: none;
   outline: none;
   min-height: 500px;
   padding-bottom: 200px;
-  white-space: pre;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  /* Changed from pre to pre-wrap for wrapping */
+  overflow-wrap: break-word;
+  word-break: break-all;
+  /* Ensure CJK wraps exactly as calculated */
+  overflow-x: hidden;
+  /* Hide horizontal scrollbar */
 }
 
 .simple-textarea::placeholder {
