@@ -12,6 +12,7 @@ interface ContextMenuProps {
     onOutdent: (nodeId: string) => void;
     onDeleteNode: (nodeId: string) => void;
     onOpenInSecondaryPane?: (nodeId: string) => void;
+    onFocusNode?: (nodeId: string) => void;
 }
 
 function ContextMenu({
@@ -26,6 +27,7 @@ function ContextMenu({
     onOutdent,
     onDeleteNode,
     onOpenInSecondaryPane,
+    onFocusNode
 }: ContextMenuProps) {
     const { t } = useLanguage();
 
@@ -125,6 +127,21 @@ function ContextMenu({
                         }}
                     >
                         右側で開く
+                    </button>
+                </>
+            )}
+
+            {onFocusNode && (
+                <>
+                    <div style={dividerStyle} />
+                    <button
+                        style={buttonStyle}
+                        onClick={() => {
+                            onFocusNode(targetId);
+                            onClose();
+                        }}
+                    >
+                        Focus
                     </button>
                 </>
             )}
