@@ -25,6 +25,7 @@ import {
 } from "./lib/outline";
 import { findNodeByContent } from "./lib/search";
 import "./styles/layout.css";
+import "./styles/buttons.css";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
