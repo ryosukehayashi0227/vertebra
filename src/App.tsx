@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Sidebar from "./components/Sidebar";
-import Editor from "./components/Editor";
-import StatusBar from "./components/StatusBar";
-import SplashScreen from "./components/SplashScreen";
+import Editor from "./components/Editor/Editor";
+import StatusBar from "./components/UI/StatusBar";
+import SplashScreen from "./components/UI/SplashScreen";
 import { listen } from "@tauri-apps/api/event";
 import {
   openFolderDialog,
@@ -27,9 +27,9 @@ import { findNodeByContent } from "./lib/search";
 import "./App.css";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import SettingsModal from "./components/SettingsModal";
-import ExportModal from "./components/ExportModal";
-import SearchModal from "./components/SearchModal";
+import SettingsModal from "./components/Modals/SettingsModal";
+import ExportModal from "./components/Modals/ExportModal";
+import SearchModal from "./components/Modals/SearchModal";
 import { useSidebarResize } from "./hooks/useSidebarResize";
 import { useFontSize } from "./hooks/useFontSize";
 import { useUndoRedo } from "./hooks/useUndoRedo";

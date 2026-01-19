@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { useLanguage } from "../contexts/LanguageContext";
+import { useLanguage } from '../../contexts/LanguageContext';
 import "./SearchModal.css";
 
 interface SearchResult {
@@ -110,8 +110,8 @@ export default function SearchModal({ isOpen, onClose, folderPath, onSelectResul
                         <ul>
                             {results.map((result, index) => (
                                 <li
-                                    key={`${result.file_path}-${result.line_number}`}
-                                    className={`search-result-item ${index === selectedIndex ? "selected" : ""}`}
+                                    key={`${result.file_path} -${result.line_number} `}
+                                    className={`search - result - item ${index === selectedIndex ? "selected" : ""} `}
                                     onClick={() => {
                                         onSelectResult(result.file_path, result.line_content);
                                         onClose();

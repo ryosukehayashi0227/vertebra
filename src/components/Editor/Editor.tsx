@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react";
-import type { Document } from "../App";
-import type { OutlineNode } from "../lib/outline";
-import { findNodeById } from "../lib/outline";
-import { useLanguage } from "../contexts/LanguageContext";
-import { getMetaKeyLabel } from "../lib/os";
+import type { Document } from "../../App";
+import type { OutlineNode } from "../../lib/outline";
+import { findNodeById } from "../../lib/outline";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { getMetaKeyLabel } from "../../lib/os";
 import { useEffect, useState } from "react";
 
 interface EditorProps {

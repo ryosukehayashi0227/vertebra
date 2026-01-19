@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ExportModal from './ExportModal';
-import { LanguageProvider } from '../contexts/LanguageContext';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 
 // Mock Tauri APIs
 vi.mock('@tauri-apps/plugin-dialog', () => ({

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import ModalWindow from './ModalWindow';
 import ModalHeader from './ModalHeader';
 import ModalFooter from './ModalFooter';

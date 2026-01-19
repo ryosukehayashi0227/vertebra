@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import StatusBar from './StatusBar';
-import { LanguageProvider } from '../contexts/LanguageContext';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 
 // Wrap component with LanguageProvider for translations
 const renderWithProviders = (ui: React.ReactElement) => {

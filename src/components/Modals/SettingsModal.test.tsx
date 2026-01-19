@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import SettingsModal from './SettingsModal';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { LanguageProvider } from '../contexts/LanguageContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 
 const renderWithProviders = (ui: React.ReactElement) => {
     return render(
