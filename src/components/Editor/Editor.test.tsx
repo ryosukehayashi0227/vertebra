@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import Editor from './Editor';
-import { LanguageProvider } from '../contexts/LanguageContext';
-import type { Document } from '../App';
+import { LanguageProvider } from '../../contexts/LanguageContext';
+import type { Document } from '../../App';
 
 // Mock ResizeObserver for RichEditor component
 beforeAll(() => {

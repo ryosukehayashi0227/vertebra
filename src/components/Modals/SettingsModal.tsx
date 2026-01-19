@@ -1,5 +1,5 @@
-import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import ModalWindow from './ModalWindow';
 import ModalHeader from './ModalHeader';
 import SegmentedControl from './SegmentedControl';

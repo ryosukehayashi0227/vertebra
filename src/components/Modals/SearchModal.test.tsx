@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import SearchModal from './SearchModal';
-import { LanguageProvider } from '../contexts/LanguageContext';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 
 // Mock Tauri invoke
 const mockInvoke = vi.fn();
