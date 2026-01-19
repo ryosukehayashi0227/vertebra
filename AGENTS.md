@@ -13,7 +13,7 @@ This document provides guidelines for AI coding assistants (Claude, Gemini, etc.
 - **Frontend**: React 18 + TypeScript
 - **Build Tool**: Vite
 - **Testing**: Vitest (unit/component), Playwright (E2E)
-- **Styling**: Vanilla CSS + Tailwind CSS
+- **Styling**: Modular CSS (`src/styles/` + Component CSS) + Tailwind CSS (via @import)
 
 ## Development Workflow
 
@@ -65,16 +65,31 @@ docs: update AGENTS.md with testing guidelines
 ```
 vertebra/
 ├── src/
-│   ├── components/        # React components
-│   │   ├── Sidebar/       # Sidebar subcomponents
-│   │   ├── Editor.tsx     # Main editor component
-│   │   └── RichEditor.tsx # Text editor with line numbers
+│   ├── components/        # React components (Domain-driven)
+│   │   ├── Editor/        # Editor components
+│   │   │   ├── Editor.tsx
+│   │   │   ├── RichEditor.tsx
+│   │   │   └── Editor.css
+│   │   ├── Sidebar/       # Sidebar components
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── FileList.tsx
+│   │   │   └── Sidebar.css
+│   │   ├── Modals/        # Modal dialogs
+│   │   │   ├── SettingsModal.tsx
+│   │   │   └── SearchModal.tsx
+│   │   └── UI/            # Shared UI components
+│   │       ├── StatusBar.tsx
+│   │       └── SplashScreen.tsx
 │   ├── contexts/          # React contexts (Theme, Language)
 │   ├── hooks/             # Custom React hooks
+│   │   ├── useModals.ts       # Modal state management
 │   │   ├── useFontSize.ts
 │   │   ├── useSidebarResize.ts
-│   │   ├── useUndoRedo.ts
-│   │   └── useSplitView.ts
+│   │   └── ...
+│   ├── styles/            # Shared styles
+│   │   ├── variables.css      # CSS variables/Tokens
+│   │   ├── layout.css         # App layout
+│   │   └── buttons.css        # Button styles
 │   ├── lib/               # Utility functions
 │   │   ├── outline.ts     # Outline tree operations
 │   │   ├── fileSystem.ts  # Tauri file system wrappers
