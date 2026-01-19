@@ -35,7 +35,7 @@ A distraction-free outline editor dedicated to writing, built with Tauri for mac
 - **Frontend:** [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - **Data:** Plain Markdown files
 - **Testing:** Vitest (Unit/Component), Playwright (E2E)
-- **Styling:** Vanilla CSS + Tailwind CSS (App structure)
+- **Styling:** Modular CSS + Tailwind CSS (App structure)
 
 ### Platform-Specific Setup
 

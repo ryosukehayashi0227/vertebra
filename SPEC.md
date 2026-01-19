@@ -17,6 +17,29 @@ Vertebra is a distraction-free outline editor designed for long-form writing. It
 - **Frontend (React)**: Handles UI, State Management, Outline Logic.
 - **Build Tool**: Vite
 
+### Code Structure
+The application follows a component-based architecture with modular CSS:
+
+#### Directory Layout
+- `src/components/`: Reusable React components organized by domain.
+  - `Editor/`: Editor-related components (`RichEditor.tsx`, `Editor.css`, etc.).
+  - `Sidebar/`: Sidebar components (`FileList.tsx`, `OutlineView.tsx`, `Sidebar.css`, etc.).
+  - `Modals/`: Dialog components (`SettingsModal.tsx`, `ExportModal.tsx`, etc.).
+  - `UI/`: Generic UI components (`StatusBar.tsx`, `SplashScreen.tsx`).
+- `src/hooks/`: Custom React hooks for logic extraction (`useModals.ts`, `useFileSystem.ts`, etc.).
+- `src/styles/`: Shared CSS modules (`variables.css`, `layout.css`, `buttons.css`).
+- `src/lib/`: Core business logic (Outline manipulation, File System, Search).
+
+#### Styling Strategy
+- **CSS Modules**: Component-specific styles are co-located with components (e.g., `Sidebar.css`).
+- **Global Styles**: Core variables and utility classes are in `src/styles/`.
+- **Variables**: Design tokens (colors, spacing) are defined in `variables.css`.
+
+#### State Management
+- **App.tsx**: Acts as the main orchestrator/controller.
+- **Custom Hooks**: Complex state logic is extracted into hooks (e.g., `useModals` for dialog states) to keep `App.tsx` clean.
+- **Context API**: `ThemeContext` and `LanguageContext` provide global application state.
+
 ### Data Structure (Runtime)
 The application maintains a tree structure in memory (`OutlineNode[]`) which is parsed from and serialized back to Markdown.
 
