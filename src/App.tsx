@@ -139,9 +139,7 @@ function AppContent() {
   const [jumpToContent, setJumpToContent] = useState<string | null>(null);
 
   const handleSelectFile = useCallback(async (filePath: string, targetContent?: string) => {
-    console.log('[handleSelectFile] Opening file:', filePath);
     if (targetContent) {
-      console.log('[handleSelectFile] Jumping to content:', targetContent);
       // Clean up the targeted content - exact match might fail due to whitespace/formatting
       // so we pass the raw target content and let the editor handle fuzzy matching if needed
       setJumpToContent(targetContent);
@@ -162,7 +160,6 @@ function AppContent() {
         isDirty: false,
       });
       setSelectedFilePath(filePath);
-      console.log('[handleSelectFile] File selected, path saved:', filePath);
 
       // Clear undo/redo history on file switch
       clearHistory();
@@ -259,10 +256,8 @@ function AppContent() {
   useEffect(() => {
     if (!isSessionRestored) return;
     if (selectedFilePath) {
-      console.log('[State Save] Saving file path to localStorage:', selectedFilePath);
       localStorage.setItem('lastFilePath', selectedFilePath);
     } else {
-      console.log('[State Save] Removing file path from localStorage');
       localStorage.removeItem('lastFilePath');
     }
   }, [selectedFilePath, isSessionRestored]);
@@ -464,17 +459,14 @@ function AppContent() {
       }));
 
       unlisten.push(await listen("menu-zoom-in", () => {
-        console.log("Zoom In Event Received");
         zoomIn();
       }));
 
       unlisten.push(await listen("menu-zoom-out", () => {
-        console.log("Zoom Out Event Received");
         zoomOut();
       }));
 
       unlisten.push(await listen("menu-zoom-reset", () => {
-        console.log("Zoom Reset Event Received");
         resetZoom();
       }));
 
