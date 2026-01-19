@@ -5,6 +5,7 @@ import { findNodeById } from "../../lib/outline";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getMetaKeyLabel } from "../../lib/os";
 import { useEffect, useState } from "react";
+import "./Editor.css";
 
 interface EditorProps {
     document: Document;
