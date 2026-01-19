@@ -3,6 +3,7 @@ import type { FileEntry } from "../lib/fileSystem";
 import { askConfirm } from "../lib/fileSystem";
 import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes } from "../lib/outline";
 import { useLanguage } from "../contexts/LanguageContext";
+import "./Sidebar/Sidebar.css";
 import FileList from "./Sidebar/FileList";
 import ContextMenu from "./Sidebar/ContextMenu";
 import SidebarFooter from "./Sidebar/SidebarFooter";
