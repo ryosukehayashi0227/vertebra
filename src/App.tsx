@@ -38,6 +38,7 @@ import { useUndoRedo } from "./hooks/useUndoRedo";
 import { useSplitView } from "./hooks/useSplitView";
 import { useSessionRestore } from "./hooks/useSessionRestore";
 import { useFocusMode } from "./hooks/useFocusMode";
+import { useModals } from "./hooks/useModals";
 
 
 export interface Document {
@@ -83,12 +84,19 @@ function AppContent() {
     setActivePane,
   } = useSplitView({ outline: currentDocument?.outline });
 
-  // Settings modal state
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  // Modals (from hook)
+  const {
+    isSettingsOpen,
+    openSettings,
+    closeSettings,
+    isExportOpen,
+    openExport,
+    closeExport,
+    isSearchOpen,
+    openSearch,
+    closeSearch,
+  } = useModals();
 
-  // Export modal state
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
 
@@ -408,7 +416,7 @@ function AppContent() {
       // Global Search
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "f") {
         e.preventDefault();
-        setIsSearchOpen(true);
+        openSearch();
       }
     };
 
@@ -457,7 +465,7 @@ function AppContent() {
       }));
 
       unlisten.push(await listen("menu-settings", () => {
-        setIsSettingsOpen(true);
+        openSettings();
       }));
 
       unlisten.push(await listen("menu-zoom-in", () => {
@@ -482,7 +490,7 @@ function AppContent() {
 
       unlisten.push(await listen("menu-export", () => {
         if (currentDocument) {
-          setIsExportOpen(true);
+          openExport();
         }
       }));
     };
@@ -542,7 +550,7 @@ function AppContent() {
           setSecondaryNodeId(nodeId);
           if (!isSplitView) setIsSplitView(true);
         }}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={openSettings}
         focusRootId={focusRootId}
         onEnterFocus={enterFocusMode}
         onExitFocus={exitFocusMode}
@@ -671,19 +679,19 @@ function AppContent() {
           />
         )}
       </main>
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
       <ExportModal
         isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
+        onClose={closeExport}
         content={currentDocument ? outlineToMarkdown(currentDocument.outline) : ''}
         title={currentDocument?.name.replace(/\.md$/, '') || 'document'}
       />
       <SearchModal
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        onClose={closeSearch}
         folderPath={folderPath}
         onSelectResult={async (filePath, lineContent) => {
-          setIsSearchOpen(false);
+          closeSearch();
           await handleSelectFile(filePath, lineContent);
         }}
       />
