@@ -79,7 +79,7 @@ describe('ExportModal', () => {
             const onClose = vi.fn();
             renderModal({ onClose });
 
-            const overlay = screen.getByText('Export Document').closest('.modal-overlay');
+            const overlay = screen.getByText('Export Document').closest('.desktop-modal-overlay');
             fireEvent.click(overlay!);
             expect(onClose).toHaveBeenCalledTimes(1);
         });
@@ -88,7 +88,7 @@ describe('ExportModal', () => {
             const onClose = vi.fn();
             renderModal({ onClose });
 
-            const modalContent = screen.getByText('Export Document').closest('.modal-content');
+            const modalContent = screen.getByText('Export Document').closest('.desktop-modal-window');
             fireEvent.click(modalContent!);
             expect(onClose).not.toHaveBeenCalled();
         });
@@ -171,7 +171,7 @@ describe('ExportModal', () => {
 
         it('should auto-close modal after successful export', async () => {
             mockSave.mockResolvedValue('/path/to/file.docx');
-            const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+            const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
 
             const onClose = vi.fn();
 
@@ -188,7 +188,7 @@ describe('ExportModal', () => {
             expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1500);
 
             // Execute the timeout callback
-            const timeoutCallback = setTimeoutSpy.mock.calls.find(call => call[1] === 1500)?.[0] as Function;
+            const timeoutCallback = setTimeoutSpy.mock.calls.find((call: any[]) => call[1] === 1500)?.[0] as Function;
             expect(timeoutCallback).toBeDefined();
 
             act(() => {
