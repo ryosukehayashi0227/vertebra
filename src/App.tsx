@@ -458,11 +458,21 @@ function AppContent() {
         e.preventDefault();
         openSearch();
       }
+
+      // Focus Mode Toggle (Cmd+Shift+X)
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "x") {
+        e.preventDefault();
+        if (focusRootId) {
+          exitFocusMode();
+        } else if (selectedNodeId) {
+          enterFocusMode(selectedNodeId);
+        }
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSave, handleUndo, handleRedo]);
+  }, [handleSave, handleUndo, handleRedo, focusRootId, selectedNodeId, enterFocusMode, exitFocusMode]);
 
   // Menu event listeners
   useEffect(() => {
