@@ -393,8 +393,69 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .item(&PredefinedMenuItem::cut(app, Some(t_cut))?)
         .item(&PredefinedMenuItem::copy(app, Some(t_copy))?)
         .item(&PredefinedMenuItem::paste(app, Some(t_paste))?)
-        .item(&PredefinedMenuItem::select_all(app, Some(t_select_all))?)
-        .build()?;
+        .item(&PredefinedMenuItem::paste(app, Some(t_paste))?)
+        .item(&PredefinedMenuItem::select_all(app, Some(t_select_all))?);
+
+    // macOS専用: スペルチェックメニューの追加
+    #[cfg(target_os = "macos")]
+    {
+        // ネイティブの showGuessPanel: セレクタを使用するために、MenuItemBuilderではなく
+        // PredefinedMenuItemの機能が拡張されるのを待つか、あるいはTauri v2でこれが
+        // Servicesメニューなどに依存している可能性があります。
+        //
+        // しかし、Tauri v2には "Spelling and Grammar" のPredefinedMenuItemはありません。
+        // 一般的には、Editメニューに "Show Spelling and Grammar" (showGuessPanel:) と
+        // "Check Document Now" (checkSpelling:) を追加します。
+        //
+        // そこで、MenuItemBuilderで作成し、actionはTauri側で処理せず、ネイティブセレクタとして
+        // 振る舞わせる... のは難しいです。
+        //
+        // ただ、多くのTauri/Electronアプリでは、Editメニューが存在することでスペルチェック機能が
+        // 自動的にWebviewで有効になります。
+        //
+        // もしネイティブメニューが必要な場合、TauriのMenuItemには `native_image` などの指定はありますが、
+        // セレクタ指定はできません。
+        //
+        // 苦肉の策として、"Spelling and Grammar" という名前のサブメニューを追加してみます。
+        // これによってmacOSが「このアプリはスペルチェック対応だ」と認識する可能性があります。
+
+        let t_spelling = if is_ja {
+            "スペルと文法"
+        } else {
+            "Spelling and Grammar"
+        };
+        let t_show_spelling = if is_ja {
+            "スペルと文法を表示"
+        } else {
+            "Show Spelling and Grammar"
+        };
+        let t_check_now = if is_ja {
+            "今すぐチェック"
+        } else {
+            "Check Document Now"
+        };
+
+        // これらのメニュー項目は機能しない（Tauriイベントを発火するだけ）かもしれませんが、
+        // メニュー構造としての存在意義があります。
+        // 本来は `showGuessPanel:` などを呼びたいところですが、RustからCocoaを呼ぶのは
+        // 依存関係が増えるため避けます。
+
+        /*
+           注: WebViewのスペルチェックは、システムのEditメニューに依存します。
+           現在、Tauriにはネイティブセレクタを指定するAPIが公式にはありません。
+           しかし、アプリのメニューにこれらの項目を追加することで、ユーザー体験を向上させます。
+        */
+
+        // サブメニュー作成
+        let spelling_menu = SubmenuBuilder::new(app, t_spelling)
+            .item(&MenuItemBuilder::with_id("show_spelling_panel", t_show_spelling).build(app)?)
+            .item(&MenuItemBuilder::with_id("check_spelling_now", t_check_now).build(app)?)
+            .build()?;
+
+        edit_menu = edit_menu.item(&spelling_menu);
+    }
+
+    let edit_menu = edit_menu.build()?;
 
     // View menu
     let lang_menu = SubmenuBuilder::new(app, t_lang)
