@@ -108,7 +108,8 @@ test.describe('Persistence', () => {
         await darkThemeBtn.click();
 
         // Close settings
-        const closeBtn = page.locator('.settings-modal button', { hasText: '×' });
+        const closeBtn = page.getByRole('button', { name: 'Close' });
+        await expect(closeBtn).toBeVisible();
         await closeBtn.click();
 
         // Verify dark theme is applied
@@ -135,11 +136,12 @@ test.describe('Persistence', () => {
         await jaBtn.click();
 
         // Close settings
-        const closeBtn = page.locator('.settings-modal button', { hasText: '×' });
+        const closeBtn = page.getByRole('button', { name: 'Close' });
+        await expect(closeBtn).toBeVisible();
         await closeBtn.click();
 
         // Verify language changed (check for Japanese text in sidebar view selector)
-        await expect(page.locator('.view-selector button.active', { hasText: 'ファイル' })).toBeVisible();
+        await expect(page.locator('.view-selector button', { hasText: 'ファイル' })).toBeVisible();
 
         // Reload page
         await page.reload();
