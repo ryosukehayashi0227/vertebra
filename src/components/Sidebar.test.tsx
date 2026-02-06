@@ -60,6 +60,8 @@ describe('Sidebar Integration', () => {
         selectedNodeId: null,
         onSelectNode: vi.fn(),
         onOutlineChange: vi.fn(),
+        onUpdateNode: vi.fn(),
+        onInsertNode: vi.fn(),
         onIndent: vi.fn(),
         onOutdent: vi.fn(),
         onMoveNode: vi.fn(),
