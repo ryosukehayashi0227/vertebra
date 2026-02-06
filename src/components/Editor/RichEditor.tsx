@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { lintText, type LintError } from '../../lib/lintAdapter';
 
 interface RichEditorProps {
     content: string;
@@ -14,6 +15,10 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
     const mirrorRef = useRef<HTMLDivElement>(null);
     const [lineHeights, setLineHeights] = useState<number[]>([]);
     const prevWidthRef = useRef<number>(0);
+
+    // Textlint state
+    const [lintErrors, setLintErrors] = useState<LintError[]>([]);
+    const [isLinting, setIsLinting] = useState(false);
 
     // Auto-resize textarea to fit content and calculate line heights
     const adjustHeightAndCalculateLines = useCallback(() => {
@@ -74,6 +79,34 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
 
         setLineHeights(heights);
     }, [content]);
+
+    // Lint execution with 1500ms debounce (user requirement)
+    const runLint = useCallback(async () => {
+        if (!content || content.trim().length === 0) {
+            setLintErrors([]);
+            return;
+        }
+
+        setIsLinting(true);
+        try {
+            const errors = await lintText(content);
+            setLintErrors(errors);
+        } catch (error) {
+            console.error('Lint failed:', error);
+            setLintErrors([]);
+        } finally {
+            setIsLinting(false);
+        }
+    }, [content]);
+
+    // Auto-lint with 1500ms debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            runLint();
+        }, 1500);
+
+        return () => clearTimeout(timer);
+    }, [content, runLint]);
 
     useEffect(() => {
         // Initial calculation
@@ -217,6 +250,18 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
                 spellCheck={true}
                 lang={language}
             />
+
+            {/* Simple lint status display (user requirement) */}
+            <div className="lint-status" style={{
+                marginTop: '8px',
+                fontSize: '12px',
+                color: lintErrors.length > 0 ? '#e74c3c' : '#27ae60',
+                opacity: isLinting ? 0.5 : 1
+            }}>
+                {isLinting ? '校正中...' :
+                    lintErrors.length === 0 ? '校正：OK' :
+                        `校正：${lintErrors.length}件のエラー`}
+            </div>
         </div>
     );
 };

@@ -12,9 +12,7 @@
     "tauri": "tauri",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -48,6 +46,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
+    "@textlint/kernel": "^15.5.1",
+    "@textlint/text-to-ast": "^15.5.1",
     "@types/node": "^25.0.9",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
@@ -57,6 +57,9 @@
     "jsdom": "^27.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
+    "textlint": "^15.5.1",
+    "textlint-rule-preset-ja-technical-writing": "^12.0.2",
+    "textlint-rule-prh": "^6.1.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4",
     "vitest": "^4.0.17"
