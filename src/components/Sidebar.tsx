@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { FileEntry } from "../lib/fileSystem";
 import { askConfirm } from "../lib/fileSystem";
 import { type OutlineNode, createNode, findNodeById, appendChildNode, serializeNodesToText, filterNodes } from "../lib/outline";
@@ -89,7 +89,6 @@ function Sidebar({
     const [viewMode, setViewMode] = useState<ViewMode>("outline");
     const [newFileName, setNewFileName] = useState("");
     const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
-    const listRef = useRef<HTMLUListElement>(null);
 
     // Auto-switch to outline view when highlighting a node
     useEffect(() => {
