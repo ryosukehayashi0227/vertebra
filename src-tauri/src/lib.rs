@@ -378,7 +378,8 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
     let file_menu = file_menu_builder.build()?;
 
     // Edit menu
-    let edit_menu = SubmenuBuilder::new(app, t_edit)
+    #[allow(unused_mut)]
+    let mut edit_menu_builder = SubmenuBuilder::new(app, t_edit)
         .item(
             &MenuItemBuilder::with_id("undo", t_undo)
                 .accelerator("CmdOrCtrl+Z")
@@ -392,7 +393,6 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
         .separator()
         .item(&PredefinedMenuItem::cut(app, Some(t_cut))?)
         .item(&PredefinedMenuItem::copy(app, Some(t_copy))?)
-        .item(&PredefinedMenuItem::paste(app, Some(t_paste))?)
         .item(&PredefinedMenuItem::paste(app, Some(t_paste))?)
         .item(&PredefinedMenuItem::select_all(app, Some(t_select_all))?);
 
@@ -452,10 +452,10 @@ fn build_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::
             .item(&MenuItemBuilder::with_id("check_spelling_now", t_check_now).build(app)?)
             .build()?;
 
-        edit_menu = edit_menu.item(&spelling_menu);
+        edit_menu_builder = edit_menu_builder.separator().item(&spelling_menu);
     }
 
-    let edit_menu = edit_menu.build()?;
+    let edit_menu = edit_menu_builder.build()?;
 
     // View menu
     let lang_menu = SubmenuBuilder::new(app, t_lang)
