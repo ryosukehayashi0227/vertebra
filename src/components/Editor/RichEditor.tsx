@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { lintText, type LintError } from '../../lib/lintAdapter';
+import { lintText, type LintError } from '../../lib/simpleLinter';
 
 interface RichEditorProps {
     content: string;
@@ -81,7 +81,7 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
     }, [content]);
 
     // Lint execution with 1500ms debounce (user requirement)
-    const runLint = useCallback(async () => {
+    const runLint = useCallback(() => {
         if (!content || content.trim().length === 0) {
             setLintErrors([]);
             return;
@@ -89,7 +89,7 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
 
         setIsLinting(true);
         try {
-            const errors = await lintText(content);
+            const errors = lintText(content);
             setLintErrors(errors);
         } catch (error) {
             console.error('Lint failed:', error);
