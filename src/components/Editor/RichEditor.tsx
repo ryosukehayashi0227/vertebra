@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface RichEditorProps {
     content: string;
@@ -8,6 +9,7 @@ interface RichEditorProps {
 }
 
 const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEditorProps) => {
+    const { language } = useLanguage();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const mirrorRef = useRef<HTMLDivElement>(null);
     const [lineHeights, setLineHeights] = useState<number[]>([]);
@@ -212,7 +214,8 @@ const RichEditor = ({ content, onChange, placeholder, jumpToContent }: RichEdito
                 value={content}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder || 'ここから本文を入力...'}
-                spellCheck={false}
+                spellCheck={true}
+                lang={language}
             />
         </div>
     );

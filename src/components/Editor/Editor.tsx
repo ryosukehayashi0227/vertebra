@@ -19,7 +19,7 @@ interface EditorProps {
 import RichEditor from "./RichEditor";
 
 function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveButton, jumpToContent }: EditorProps) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const selectedNode = useMemo(() => {
         if (!selectedNodeId) return null;
         return findNodeById(document.outline, selectedNodeId);
@@ -65,6 +65,8 @@ function Editor({ document, selectedNodeId, onOutlineChange, onSave, hideSaveBut
                     value={selectedNode.text}
                     onChange={(e) => handleUpdateNode(selectedNode.id, { text: e.target.value })}
                     placeholder={t('editor.sectionNamePlaceholder')}
+                    spellCheck={true}
+                    lang={language}
                 />
                 {!hideSaveButton && (
                     <div className="editor-actions">
