@@ -12,10 +12,9 @@ export const isTauriEnvironment = (): boolean => {
         (window.__TAURI__ !== undefined || window.__TAURI_INTERNALS__ !== undefined);
 };
 
-// Safe invoke wrapper - returns null if not in Tauri
+// Safe invoke wrapper - returns null if not in Tauri or on error
 export const safeInvoke = async <T>(cmd: string, args?: any): Promise<T | null> => {
     if (!isTauriEnvironment()) {
-        console.warn(`[TauriAdapter] Not in Tauri environment, skipping invoke: ${cmd}`);
         return null;
     }
 
@@ -27,7 +26,7 @@ export const safeInvoke = async <T>(cmd: string, args?: any): Promise<T | null> 
         }
         return null;
     } catch (e) {
-        console.error(`[TauriAdapter] invoke failed: ${cmd}`, e);
+        // Silently fail - caller should handle null response
         return null;
     }
 };
