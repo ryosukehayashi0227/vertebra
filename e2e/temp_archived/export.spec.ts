@@ -5,23 +5,8 @@ test.beforeEach(async ({ page }) => {
     page.on('console', msg => console.log(`[Browser] ${msg.text()}`));
     await mockTauri(page);
 
-    // Mock export_document command
-    await page.addInitScript(() => {
-        const originalInvoke = (window as any).__TAURI_INTERNALS__.invoke;
-        (window as any).__TAURI_INTERNALS__.invoke = async (cmd: string, args: any) => {
-            if (cmd === 'export_document') {
-                console.log('[MockTauri] export_document called with:', args);
-                // Simulate successful export
-                return { success: true };
-            }
-            if (cmd === 'plugin:dialog|save') {
-                console.log('[MockTauri] save dialog called');
-                // Return a mock file path
-                return '/mock/export/document.docx';
-            }
-            return originalInvoke(cmd, args);
-        };
-    });
+    // Additional test-specific overrides can go here if needed
+    // But basic export mocking is now in mockTauri
 });
 
 test.describe('Export Flow', () => {
@@ -30,20 +15,16 @@ test.describe('Export Flow', () => {
 
         // Open folder and select file
         await page.getByRole('button', { name: 'Open Folder to Start' }).click();
+        await page.getByRole('button', { name: 'Files' }).click();
         await page.locator('.file-item', { hasText: 'test.md' }).click();
 
         // Wait for document to load
         await expect(page.getByText('Test Node')).toBeVisible();
 
-        // Trigger export via menu (simulated via keyboard shortcut or button)
-        // Note: In real app, this would be triggered via menu event
-        // For E2E, we'll click the export button if available, or use keyboard
-
-        // Open settings to access export (or use menu if available)
-        // For now, we'll simulate the export modal opening
+        // Trigger export via mock event
         await page.evaluate(() => {
-            // Trigger menu-export event
-            (window as any).__TAURI_INTERNALS__.invoke('menu-export', {});
+            // @ts-ignore
+            window.__mockEmit('menu-export');
         });
 
         // Wait for export modal to appear
@@ -66,37 +47,35 @@ test.describe('Export Flow', () => {
 
         // Open folder and select file
         await page.getByRole('button', { name: 'Open Folder to Start' }).click();
+        await page.getByRole('button', { name: 'Files' }).click();
         await page.locator('.file-item', { hasText: 'test.md' }).click();
 
-        // Wait for document to load
         await expect(page.getByText('Test Node')).toBeVisible();
 
         // Trigger export
         await page.evaluate(() => {
-            (window as any).__TAURI_INTERNALS__.invoke('menu-export', {});
+            // @ts-ignore
+            window.__mockEmit('menu-export');
         });
 
-        // Wait for export modal
         await expect(page.locator('.export-modal')).toBeVisible();
 
         // Click cancel button
         const cancelButton = page.getByRole('button', { name: /Cancel/i });
         await cancelButton.click();
 
-        // Modal should close
         await expect(page.locator('.export-modal')).not.toBeVisible();
     });
 
     test('should show error message on export failure', async ({ page }) => {
-        // Override export to fail
+        // Override invoke to fail ONLY for this test
         await page.addInitScript(() => {
-            const originalInvoke = (window as any).__TAURI_INTERNALS__.invoke;
-            (window as any).__TAURI_INTERNALS__.invoke = async (cmd: string, args: any) => {
+            // @ts-ignore
+            const core = window.__TAURI__.core;
+            const originalInvoke = core.invoke;
+            core.invoke = async (cmd: string, args: any) => {
                 if (cmd === 'export_document') {
                     throw new Error('Export failed');
-                }
-                if (cmd === 'plugin:dialog|save') {
-                    return '/mock/export/document.docx';
                 }
                 return originalInvoke(cmd, args);
             };
@@ -104,26 +83,21 @@ test.describe('Export Flow', () => {
 
         await page.goto('/');
 
-        // Open folder and select file
         await page.getByRole('button', { name: 'Open Folder to Start' }).click();
+        await page.getByRole('button', { name: 'Files' }).click();
         await page.locator('.file-item', { hasText: 'test.md' }).click();
 
-        // Trigger export
         await page.evaluate(() => {
-            (window as any).__TAURI_INTERNALS__.invoke('menu-export', {});
+            // @ts-ignore
+            window.__mockEmit('menu-export');
         });
 
-        // Wait for export modal
         await expect(page.locator('.export-modal')).toBeVisible();
 
-        // Click export button
         const exportButton = page.getByRole('button', { name: /Export as DOCX/i });
         await exportButton.click();
 
-        // Should show error message
         await expect(page.getByText(/Error/i)).toBeVisible({ timeout: 5000 });
-
-        // Modal should remain open on error
         await expect(page.locator('.export-modal')).toBeVisible();
     });
 
@@ -132,10 +106,10 @@ test.describe('Export Flow', () => {
 
         // Try to trigger export without opening a document
         await page.evaluate(() => {
-            (window as any).__TAURI_INTERNALS__.invoke('menu-export', {});
+            // @ts-ignore
+            window.__mockEmit('menu-export');
         });
 
-        // Export modal should not appear
         await page.waitForTimeout(1000);
         await expect(page.locator('.export-modal')).not.toBeVisible();
     });

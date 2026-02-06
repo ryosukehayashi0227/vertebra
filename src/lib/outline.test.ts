@@ -315,6 +315,26 @@ describe('insertNodeAfter', () => {
         expect(result).toHaveLength(3);
         expect(result[1].id).toBe('2');
     });
+
+    it('should insert a node after a specified node at nested level', () => {
+        const tree: OutlineNode[] = [
+            {
+                id: '1', text: 'Parent', content: '', level: 0, children: [
+                    { id: '2', text: 'Child 1', content: '', level: 1, children: [] },
+                    { id: '3', text: 'Child 2', content: '', level: 1, children: [] }
+                ]
+            }
+        ];
+        const newNode: OutlineNode = { id: '4', text: 'New Child', content: '', level: 1, children: [] };
+
+        // Insert after '2' (Child 1)
+        const result = insertNodeAfter(tree, '2', newNode);
+
+        expect(result[0].children).toHaveLength(3);
+        expect(result[0].children[1].id).toBe('4');
+        expect(result[0].children[1].text).toBe('New Child');
+        expect(result[0].children[2].id).toBe('3');
+    });
 });
 
 
@@ -392,6 +412,28 @@ describe('outdentNode', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].level).toBe(0);
+    });
+
+    it('should outdent a deeply nested node', () => {
+        const tree: OutlineNode[] = [
+            {
+                id: '1', text: 'Root', content: '', level: 0, children: [
+                    {
+                        id: '2', text: 'L1', content: '', level: 1, children: [
+                            { id: '3', text: 'L2', content: '', level: 2, children: [] }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        const result = outdentNode(tree, '3');
+
+        // Should move '3' to be sibling of '2' (child of '1')
+        expect(result[0].children).toHaveLength(2);
+        expect(result[0].children[0].id).toBe('2');
+        expect(result[0].children[1].id).toBe('3');
+        expect(result[0].children[1].level).toBe(1);
     });
 });
 
