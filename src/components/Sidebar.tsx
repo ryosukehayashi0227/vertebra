@@ -30,9 +30,11 @@ interface SidebarProps {
     outline: OutlineNode[];
     selectedNodeId: string | null;
     onSelectNode: (id: string) => void;
-    onOutlineChange: (outline: OutlineNode[]) => void;
+    onUpdateNode: (id: string, text: string) => void;
+    onOutlineChange: (bg: OutlineNode[]) => void;
     onIndent: (id: string) => void;
     onOutdent: (id: string) => void;
+    onInsertNode: (afterId: string, text?: string) => void;
     onMoveNode: (sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
     onDeleteNode: (id: string) => void;
     width?: number;
@@ -69,9 +71,11 @@ function Sidebar({
     outline,
     selectedNodeId,
     onSelectNode,
+    onUpdateNode,
     onOutlineChange,
     onIndent,
     onOutdent,
+    onInsertNode,
     onMoveNode,
     width,
     onResizeStart,
@@ -310,8 +314,12 @@ function Sidebar({
                                                 selectedNodeId={selectedNodeId}
                                                 highlightedNodeId={highlightedNodeId}
                                                 onSelectNode={onSelectNode}
+                                                onUpdateNode={onUpdateNode}
                                                 onMoveNode={onMoveNode}
                                                 onContextMenu={handleOutlineContextMenu}
+                                                onIndent={onIndent}
+                                                onOutdent={onOutdent}
+                                                onInsertNode={onInsertNode}
                                                 searchResult={searchResult}
                                                 collapsedNodes={collapsedNodes}
                                                 onToggleCollapse={toggleNodeCollapse}

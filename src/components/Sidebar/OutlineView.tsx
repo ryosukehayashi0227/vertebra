@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { OutlineNode } from '../../lib/outline';
-import { countStats } from '../../lib/outline';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { OutlineNode } from '../../types/outline';
+import { OutlineItem } from './OutlineItem';
 import type { DragOverInfo } from './types';
 import './OutlineView.css';
 
@@ -10,8 +9,14 @@ interface OutlineViewProps {
     selectedNodeId: string | null;
     highlightedNodeId?: string | null;
     onSelectNode: (id: string) => void;
+    onUpdateNode: (id: string, text: string) => void;
     onMoveNode: (sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
     onContextMenu: (e: React.MouseEvent, nodeId: string) => void;
+    // New keyboard ops
+    onIndent: (id: string) => void;
+    onOutdent: (id: string) => void;
+    onInsertNode: (afterId: string, text?: string) => void;
+    //
     searchResult: { visibleIds: Set<string>; matchedIds: Set<string> } | null;
     collapsedNodes: Set<string>;
     onToggleCollapse: (nodeId: string) => void;
@@ -22,65 +27,75 @@ export default function OutlineView({
     selectedNodeId,
     highlightedNodeId,
     onSelectNode,
+    onUpdateNode,
     onMoveNode,
     onContextMenu,
+    onIndent,
+    onOutdent,
+    onInsertNode,
     searchResult,
     collapsedNodes,
     onToggleCollapse
 }: OutlineViewProps) {
-    const { t } = useLanguage();
     const [dragOverInfo, setDragOverInfo] = useState<DragOverInfo | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
 
+    // Refs for scrolling and focus
     const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+    const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
     // Scroll to highlighted node
     useEffect(() => {
         if (highlightedNodeId) {
-            // Use setTimeout to ensure DOM is fully updated
             setTimeout(() => {
                 const element = itemRefs.current.get(highlightedNodeId);
                 const scrollContainer = document.querySelector('.sidebar-scroll-container');
-
                 if (element && scrollContainer) {
-                    const containerRect = scrollContainer.getBoundingClientRect();
-                    const elementRect = element.getBoundingClientRect();
-
-                    const relativeTop = elementRect.top - containerRect.top;
-                    const currentScroll = scrollContainer.scrollTop;
-
-                    // Align to top instead of center
-                    const targetScrollTop = currentScroll + relativeTop - 10; // 10px padding from top
-
-                    console.log('[Scroll Debug]', {
-                        beforeScrollTop: currentScroll,
-                        targetScrollTop: targetScrollTop,
-                        relativeTop: relativeTop,
-                        elementTop: elementRect.top,
-                        containerTop: containerRect.top
-                    });
-
-                    scrollContainer.scrollTo({ top: targetScrollTop, behavior: 'instant' }); // Use instant to verify movement
-
-                    // Log after scroll
-                    setTimeout(() => {
-                        console.log('[Scroll Debug] After scroll scrollTop:', scrollContainer.scrollTop);
-                    }, 50);
-                } else {
-                    console.log('[Scroll Debug] Element or container missing');
+                    element.scrollIntoView({ block: 'nearest' });
                 }
             }, 100);
         }
     }, [highlightedNodeId]);
 
-    // Find the target node from mouse coordinates
+    // Focus selected node input
+    useEffect(() => {
+        if (selectedNodeId) {
+            // Need a small timeout to ensure ref is mounted if node was just created/rendered
+            setTimeout(() => {
+                const input = inputRefs.current.get(selectedNodeId);
+                if (input && document.activeElement !== input) {
+                    input.focus();
+                }
+            }, 50);
+        }
+    }, [selectedNodeId, outline]);
+
+    // Handle keyboard events from items
+    const handleItemKeyDown = (e: React.KeyboardEvent, node: OutlineNode) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // We want to insert AFTER this node
+            onInsertNode(node.id);
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                onOutdent(node.id);
+            } else {
+                onIndent(node.id);
+            }
+        }
+        // Arrow keys can be handled here or by default behavior if inputs are focused.
+        // For standard "App-like" feel, we might want custom arrow navigation.
+        // For "Minimum and Clean", let's stick to requested features first.
+    };
+
+    // Find the target node from mouse coordinates (for D&D)
     const findTargetFromPoint = useCallback((x: number, y: number) => {
         const elements = document.elementsFromPoint(x, y);
         for (const el of elements) {
             const nodeEl = el.closest('.sidebar-outline-node') as HTMLElement;
             if (nodeEl && nodeEl.dataset.nodeId) {
                 const nodeId = nodeEl.dataset.nodeId;
-                // Skip if it's the element being dragged
                 if (nodeId === draggingId) continue;
 
                 const itemEl = nodeEl.querySelector('.sidebar-outline-item');
@@ -101,7 +116,7 @@ export default function OutlineView({
         return null;
     }, [draggingId]);
 
-    // Handle drag events using mouse position
+    // Handle drag events (Global)
     useEffect(() => {
         if (!draggingId) return;
 
@@ -109,7 +124,6 @@ export default function OutlineView({
             const target = findTargetFromPoint(e.clientX, e.clientY);
             if (target) {
                 if (dragOverInfo?.id !== target.id || dragOverInfo?.position !== target.position) {
-                    console.log("[Vertebra D&D] Over:", target.id, target.position);
                     setDragOverInfo(target);
                 }
             }
@@ -117,7 +131,6 @@ export default function OutlineView({
 
         const handleMouseUp = () => {
             if (draggingId && dragOverInfo) {
-                console.log("[Vertebra D&D] Drop:", { source: draggingId, target: dragOverInfo.id, pos: dragOverInfo.position });
                 onMoveNode(draggingId, dragOverInfo.id, dragOverInfo.position);
             }
             setDraggingId(null);
@@ -134,84 +147,67 @@ export default function OutlineView({
     }, [draggingId, dragOverInfo, findTargetFromPoint, onMoveNode]);
 
     const handleMouseDown = (e: React.MouseEvent, id: string) => {
-        // Only start drag on left mouse button
         if (e.button !== 0) return;
-        console.log("[Vertebra D&D] Start:", id);
         setDraggingId(id);
     };
 
-    // Render outline items with mousedown handler for dragging
-    const renderOutlineItem = (node: OutlineNode): React.ReactNode => {
-        // Search: Check visibility
-        if (searchResult && !searchResult.visibleIds.has(node.id)) {
-            return null;
-        }
+    const renderNodes = (nodes: OutlineNode[]): React.ReactNode[] => {
+        return nodes.map(node => {
+            // Check visibility based on search
+            if (searchResult && !searchResult.visibleIds.has(node.id)) {
+                return null;
+            }
 
-        const isSelected = selectedNodeId === node.id;
-        const isHighlighted = node.id === highlightedNodeId;
-        const hasChildren = node.children.length > 0;
-        const isCollapsed = searchResult ? false : collapsedNodes.has(node.id);
-        const isTarget = dragOverInfo?.id === node.id;
-        const isSelf = draggingId === node.id;
-        const isMatched = searchResult?.matchedIds.has(node.id);
+            const isSelected = selectedNodeId === node.id;
+            const isHighlighted = node.id === highlightedNodeId;
+            const hasChildren = node.children.length > 0;
+            const isCollapsed = searchResult ? false : collapsedNodes.has(node.id);
+            const isTarget = dragOverInfo?.id === node.id;
+            const isSelf = draggingId === node.id;
+            const isMatched = searchResult?.matchedIds.has(node.id);
 
-        if (isHighlighted) {
-            // Highlighted logic
-        }
+            const positionClass = isTarget ? `drag-over-${dragOverInfo?.position}` : "";
 
-        const isDraggable = !searchResult;
-
-        const itemClassName = `sidebar-outline-item ${isSelected ? "selected" : ""} ${isHighlighted ? "highlighted" : ""}`;
-
-        return (
-            <li
-                key={node.id}
-                className={`sidebar-outline-node ${isTarget ? `drag-over-${dragOverInfo?.position}` : ""} ${isSelf ? "is-dragging" : ""} ${isMatched ? "search-match" : ""}`}
-                data-node-id={node.id}
-            >
-                <div
+            return (
+                <li
+                    key={node.id}
+                    className={`sidebar-outline-node ${positionClass} ${isSelf ? "is-dragging" : ""} ${isMatched ? "search-match" : ""}`}
+                    data-node-id={node.id}
                     ref={(el) => {
-                        if (el) itemRefs.current.set(node.id, el);
+                        if (el instanceof HTMLDivElement) itemRefs.current.set(node.id, el);
                         else itemRefs.current.delete(node.id);
                     }}
-                    className={itemClassName}
-                    style={{ paddingLeft: `${node.level * 20 + 8}px`, cursor: isDraggable ? 'grab' : 'default' }}
-                    onMouseDown={isDraggable ? (e) => handleMouseDown(e, node.id) : undefined}
-                    onClick={() => !draggingId && onSelectNode(node.id)}
-                    onContextMenu={(e) => {
-                        e.preventDefault();
-                        onContextMenu(e, node.id);
-                    }}
-                    tabIndex={0}
                 >
-                    <button
-                        className={`sidebar-collapse-btn ${hasChildren ? "has-children" : ""}`}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (hasChildren) {
-                                onToggleCollapse(node.id);
-                            }
+                    <OutlineItem
+                        node={node}
+                        isSelected={isSelected}
+                        isHighlighted={isHighlighted}
+                        isCollapsed={isCollapsed}
+                        hasChildren={hasChildren}
+                        onSelect={onSelectNode}
+                        onUpdate={onUpdateNode}
+                        onToggleCollapse={onToggleCollapse}
+                        onKeyDown={handleItemKeyDown}
+                        onContextMenu={onContextMenu}
+                        onMouseDown={!searchResult ? handleMouseDown : undefined}
+                        inputRef={(el) => {
+                            if (el) inputRefs.current.set(node.id, el);
+                            else inputRefs.current.delete(node.id);
                         }}
-                        style={{ visibility: hasChildren ? 'visible' : 'hidden' }}
-                    >
-                        {hasChildren ? (isCollapsed ? '▸' : '▾') : ''}
-                    </button>
-                    <span className="sidebar-outline-text">{node.text || t('sidebar.newSection')}</span>
-                    <span className="sidebar-node-stats">{countStats("", node.content).chars}</span>
-                </div>
-                {hasChildren && !isCollapsed && (
-                    <ul className="sidebar-outline-children">
-                        {node.children.map(renderOutlineItem)}
-                    </ul>
-                )}
-            </li>
-        );
+                    />
+                    {hasChildren && !isCollapsed && (
+                        <ul className="sidebar-outline-children">
+                            {renderNodes(node.children)}
+                        </ul>
+                    )}
+                </li>
+            );
+        });
     };
 
     return (
         <ul className="sidebar-outline-list">
-            {outline.map(renderOutlineItem)}
+            {renderNodes(outline)}
         </ul>
     );
 }

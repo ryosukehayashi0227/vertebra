@@ -22,6 +22,9 @@ import {
   moveNode,
   removeNode,
   calculateTotalStats,
+  createNode,
+  insertNodeAfter,
+  findNodeById,
 } from "./lib/outline";
 import { findNodeByContent } from "./lib/search";
 import "./styles/layout.css";
@@ -391,6 +394,37 @@ function AppContent() {
     }
   }, [currentDocument, handleOutlineChange, selectedNodeId, pushHistory]);
 
+  const handleUpdateNode = useCallback((id: string, text: string) => {
+    if (!currentDocument) return;
+    const updateRecursive = (nodes: OutlineNode[]): OutlineNode[] => {
+      return nodes.map(n => {
+        if (n.id === id) return { ...n, text };
+        return { ...n, children: updateRecursive(n.children) };
+      });
+    };
+    const newOutline = updateRecursive(currentDocument.outline);
+    // Don't push history for every keystroke? Or debounce?
+    // For now, let's update state directly. 
+    // Ideally we should debounce history push for text changes.
+    // handleOutlineChange updates isDirty.
+    handleOutlineChange(newOutline);
+  }, [currentDocument, handleOutlineChange]);
+
+  const handleInsertNode = useCallback((afterId: string, text = "") => {
+    if (!currentDocument) return;
+    pushHistory();
+
+    // Find target node to inherit level
+    const targetNode = findNodeById(currentDocument.outline, afterId);
+    if (!targetNode) return;
+
+    const newNode = createNode(text, targetNode.level);
+    const newOutline = insertNodeAfter(currentDocument.outline, afterId, newNode);
+
+    handleOutlineChange(newOutline);
+    setSelectedNodeId(newNode.id);
+  }, [currentDocument, handleOutlineChange, pushHistory]);
+
 
 
   // Keyboard shortcuts
@@ -542,6 +576,8 @@ function AppContent() {
         onOutdent={handleOutdent}
         onMoveNode={handleMoveNode}
         onDeleteNode={handleDeleteNode}
+        onUpdateNode={handleUpdateNode}
+        onInsertNode={handleInsertNode}
         width={sidebarWidth}
         onResizeStart={startResizing}
         isSplitView={isSplitView}

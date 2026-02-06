@@ -59,13 +59,26 @@
     color: var(--text-primary);
 }
 
-.sidebar-outline-text {
+/* .sidebar-outline-text replaced by input */
+.sidebar-outline-input {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 13px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: inherit;
+    font-family: inherit;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    /* for flex shrinking */
 }
+
+
+
 
 .sidebar-node-stats {
     font-size: 11px;

@@ -1,11 +1,7 @@
-export interface OutlineNode {
-    id: string;
-    text: string;
-    content: string;
-    level: number;
-    children: OutlineNode[];
-    collapsed?: boolean;
-}
+import { OutlineNode } from "../types/outline";
+
+export type { OutlineNode };
+
 
 let nodeIdCounter = 0;
 
