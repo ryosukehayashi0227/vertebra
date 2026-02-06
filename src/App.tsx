@@ -61,6 +61,7 @@ function AppContent() {
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [structureUpdateTrigger, setStructureUpdateTrigger] = useState(0);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const isSessionRestore = useRef(true); // Flag to track if we're restoring session
   const [isLoading, setIsLoading] = useState(false);
@@ -368,6 +369,7 @@ function AppContent() {
     pushHistory();
     const newOutline = indentNode(currentDocument.outline, id);
     handleOutlineChange(newOutline);
+    setStructureUpdateTrigger(prev => prev + 1);
   }, [currentDocument, handleOutlineChange, pushHistory]);
 
   const handleOutdent = useCallback((id: string) => {
@@ -375,6 +377,7 @@ function AppContent() {
     pushHistory();
     const newOutline = outdentNode(currentDocument.outline, id);
     handleOutlineChange(newOutline);
+    setStructureUpdateTrigger(prev => prev + 1);
   }, [currentDocument, handleOutlineChange, pushHistory]);
 
   const handleMoveNode = useCallback((sourceId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => {
@@ -382,6 +385,7 @@ function AppContent() {
     pushHistory();
     const newOutline = moveNode(currentDocument.outline, sourceId, targetId, position);
     handleOutlineChange(newOutline);
+    setStructureUpdateTrigger(prev => prev + 1);
   }, [currentDocument, handleOutlineChange, pushHistory]);
 
   const handleDeleteNode = useCallback((id: string) => {
@@ -389,6 +393,7 @@ function AppContent() {
     pushHistory();
     const newOutline = removeNode(currentDocument.outline, id);
     handleOutlineChange(newOutline);
+    setStructureUpdateTrigger(prev => prev + 1);
     if (selectedNodeId === id) {
       setSelectedNodeId(null);
     }
@@ -423,6 +428,7 @@ function AppContent() {
 
     handleOutlineChange(newOutline);
     setSelectedNodeId(newNode.id);
+    setStructureUpdateTrigger(prev => prev + 1);
   }, [currentDocument, handleOutlineChange, pushHistory]);
 
 
@@ -578,6 +584,7 @@ function AppContent() {
         onDeleteNode={handleDeleteNode}
         onUpdateNode={handleUpdateNode}
         onInsertNode={handleInsertNode}
+        structureUpdateTrigger={structureUpdateTrigger}
         width={sidebarWidth}
         onResizeStart={startResizing}
         isSplitView={isSplitView}
