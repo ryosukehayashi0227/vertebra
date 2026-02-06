@@ -34,8 +34,7 @@ export const OutlineItem: React.FC<OutlineItemProps> = ({
     onMouseDown,
     inputRef
 }) => {
-    const { t } = useLanguage();
-
+    const { t, language } = useLanguage();
 
     // Auto-focus logic is handled by the parent using the ref, 
     // but we can also ensure focus if selected
@@ -78,6 +77,8 @@ export const OutlineItem: React.FC<OutlineItemProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 onFocus={() => onSelect(node.id)}
                 placeholder={t('sidebar.newSection')}
+                spellCheck={true}
+                lang={language}
             />
 
             <span className="sidebar-node-stats">{countStats("", node.content).chars}</span>
