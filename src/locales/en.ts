@@ -50,6 +50,7 @@ export const en: TranslationDictionary = {
     'sidebar.searchPlaceholder': 'Search outline...',
     'sidebar.deleteNode': 'Delete',
     'sidebar.confirmDeleteNode': 'Are you sure you want to delete this node and its children?',
+    'sidebar.clearSearch': 'Clear search',
 
     // Welcome Screen
     'welcome.title': 'Welcome to Vertebra',

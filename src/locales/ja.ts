@@ -50,6 +50,7 @@ export const ja: TranslationDictionary = {
     'sidebar.searchPlaceholder': 'アウトラインを検索...',
     'sidebar.deleteNode': '削除',
     'sidebar.confirmDeleteNode': 'このノードとそのすべての子要素を削除してもよろしいですか？',
+    'sidebar.clearSearch': '検索をクリア',
 
     // Welcome Screen
     'welcome.title': 'Vertebraへようこそ',

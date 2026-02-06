@@ -50,6 +50,7 @@ export interface TranslationDictionary {
     'sidebar.searchPlaceholder': string;
     'sidebar.deleteNode': string;
     'sidebar.confirmDeleteNode': string;
+    'sidebar.clearSearch': string;
 
     // Welcome Screen
     'welcome.title': string;
