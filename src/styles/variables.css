@@ -35,6 +35,24 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
 
+    /* Font Stack - optimized for Mac with Inter + Hiragino */
+    --font-sans: "Inter", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+        "Noto Sans JP", system-ui, -apple-system, sans-serif;
+    --font-serif: "Hiragino Mincho ProN", "Noto Serif JP",
+        "Georgia", serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+        "Liberation Mono", monospace;
+
+    /* Typography Rhythm */
+    --line-height-tight: 1.4;
+    --line-height-base: 1.75;
+    --line-height-relaxed: 2.0;
+    --paragraph-spacing: 1.25em;
+
+    /* Indent Guide */
+    --indent-guide-color: rgba(128, 128, 128, 0.1);
+    --indent-guide-color-deep: rgba(128, 128, 128, 0.06);
+
     /* Border Radius */
     --radius-sm: 4px;
     --radius-md: 8px;
