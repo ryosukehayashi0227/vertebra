@@ -20,6 +20,7 @@ interface OutlineViewProps {
     searchResult: { visibleIds: Set<string>; matchedIds: Set<string> } | null;
     collapsedNodes: Set<string>;
     onToggleCollapse: (nodeId: string) => void;
+    structureUpdateTrigger?: number;
 }
 
 export default function OutlineView({
@@ -35,7 +36,8 @@ export default function OutlineView({
     onInsertNode,
     searchResult,
     collapsedNodes,
-    onToggleCollapse
+    onToggleCollapse,
+    structureUpdateTrigger,
 }: OutlineViewProps) {
     const [dragOverInfo, setDragOverInfo] = useState<DragOverInfo | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -58,17 +60,28 @@ export default function OutlineView({
     }, [highlightedNodeId]);
 
     // Focus selected node input
+    const prevTrigger = useRef(structureUpdateTrigger);
+
+    // Focus selected node input
     useEffect(() => {
-        if (selectedNodeId) {
+        const structureChanged = (structureUpdateTrigger ?? 0) > (prevTrigger.current ?? 0);
+
+        // Update refs
+        prevTrigger.current = structureUpdateTrigger;
+
+        // Only auto-focus if meaningful structure change occurred
+        // We do NOT focus on simple selection changes to avoid stealing focus from Editor during sync
+        if (structureChanged && selectedNodeId) {
             // Need a small timeout to ensure ref is mounted if node was just created/rendered
             setTimeout(() => {
                 const input = inputRefs.current.get(selectedNodeId);
+                // Only focus if we're not already focused on it
                 if (input && document.activeElement !== input) {
                     input.focus();
                 }
             }, 50);
         }
-    }, [selectedNodeId, outline]);
+    }, [selectedNodeId, structureUpdateTrigger]);
 
     // Handle keyboard events from items
     const handleItemKeyDown = (e: React.KeyboardEvent, node: OutlineNode) => {

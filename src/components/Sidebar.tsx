@@ -50,6 +50,7 @@ interface SidebarProps {
     onEnterFocus?: (id: string) => void;
     onExitFocus?: () => void;
     highlightedNodeId?: string | null;
+    structureUpdateTrigger?: number;
 }
 
 function Sidebar({
@@ -88,6 +89,7 @@ function Sidebar({
     onEnterFocus,
     onExitFocus,
     highlightedNodeId,
+    structureUpdateTrigger,
 }: SidebarProps) {
     const { t } = useLanguage();
     const [viewMode, setViewMode] = useState<ViewMode>("outline");
@@ -309,7 +311,6 @@ function Sidebar({
                                             <p className="sidebar-empty-hint">項目がありません</p>
                                         ) : (
                                             <OutlineView
-                                                key={`outline-${highlightedNodeId || 'default'}`}
                                                 outline={displayedOutline}
                                                 selectedNodeId={selectedNodeId}
                                                 highlightedNodeId={highlightedNodeId}
@@ -323,6 +324,7 @@ function Sidebar({
                                                 searchResult={searchResult}
                                                 collapsedNodes={collapsedNodes}
                                                 onToggleCollapse={toggleNodeCollapse}
+                                                structureUpdateTrigger={structureUpdateTrigger}
                                             />
                                         )}
                                     </div>
