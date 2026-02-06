@@ -1,0 +1,27 @@
+# Dependencies & Locks (High token usage, low semantic value for AI logic)
+package-lock.json
+src-tauri/Cargo.lock
+node_modules/
+
+# Build Abysses (Deep directories with binary/generated files)
+src-tauri/target/
+dist/
+dist-ssr/
+src-tauri/gen/
+
+# Testing & Reports
+coverage/
+playwright-report/
+test-results/
+
+# Assets (Binary files)
+*.svg
+*.png
+*.ico
+*.jpg
+*.jpeg
+*.gif
+src/assets/
+
+# Misc
+.DS_Store
